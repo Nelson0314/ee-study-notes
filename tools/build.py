@@ -78,7 +78,7 @@ def page(title, body, depth, site, scripts=(), description=''):
 {markers}
 <div class="sitebar"><div class="in">
   <a class="brand" href="{up}index.html">{site}</a>
-  <a href="{up}index.html#courses">課程</a>
+  <a href="{up}index.html#courses">主題</a>
   <a href="{up}guide.html">編寫規範</a>
   <span class="sp"></span>
   <a href="https://github.com/{repo}">GitHub</a>
@@ -236,7 +236,7 @@ def render_home(courses, site):
   <li>所有單元共用同一套頁面骨架與元件，撰寫方式寫在 <a href="guide.html">編寫規範</a>（AGENTS.md）。</li>
   <li>新增內容的流程：在 <code>course.json</code> 登錄 → 依範本撰寫 Markdown → 執行 <code>tools/build.py</code>。</li>
 </ul></div>
-<h2 id="courses">課程</h2>
+<h2 id="courses">主題</h2>
 <div class="cards">
 {cards}
 </div>
