@@ -12,24 +12,24 @@
 
 | 使用者的要求 | 做法 |
 |--------------|------|
-| 「新增第 N 章」「把這份講義做成網頁」 | 使用 project skill `add-chapter`（`.claude/skills/add-chapter/SKILL.md`），依其步驟執行 |
-| 「修改某一章的內容／例題」 | 只改 `content/<course>/chNN-*.md` 或 `figs/chNN.js`，完成後 `python tools/build.py` |
-| 「新增一門課」 | AGENTS.md §3.3 |
-| 「改版面／配色」 | 只改 `assets/css/notes.css` 或 `tools/build.py` 的模板；改完後所有章節一併重建並逐頁目視確認 |
-| 「新增一種元件」 | AGENTS.md §5 + `notes.css` + `check.py` 的 `ALLOWED_CLASSES` 三處同步 |
+| 「把這份 PDF／簡報／論文／講義做成教材」「新增一章」 | 使用 project skill `add-unit`（`.claude/skills/add-unit/SKILL.md`） |
+| 「修改某個單元的內容或例題」 | 只改 `content/<topic>/chNN-*.md` 或 `figs/chNN.js`，完成後 `python tools/build.py` |
+| 「新增一個科目／主題」 | AGENTS.md §3.4 |
+| 「改版面／配色」 | 只改 `assets/css/notes.css` 或 `tools/build.py` 的模板；改完後重建並檢視每個主題至少一頁 |
+| 「新增一種元件」 | 在 AGENTS.md §5 補說明，在 `notes.css` 加樣式 |
 
 ### 環境
 
 - Windows：Python 指令是 `python`，不是 `python3`。
-- `check.py`／`build.py` 已自行把 stdout 設成 UTF-8；其他臨時 Python 輸出中文時加 `PYTHONIOENCODING=utf-8`。
-- 讀 PDF 用 Read 工具的 `pages` 參數，一次最多 20 頁。
+- 臨時 Python 腳本輸出中文時加 `PYTHONIOENCODING=utf-8`。
+- Read 工具無法渲染 PDF 頁面時（缺 poppler），改用 `pypdf` 擷取文字。
 
 ### 脈絡管理
 
-- 章節檔與圖檔通常各 300–700 行。修改時用 Grep 找到目標小節，再以 Read 的 offset／limit 只讀該段，不要整檔讀入。
-- 新增章節時只需讀一份既有章節的**一個小節 + 附錄**當作格式範例，不必讀完整章。
-- build 輸出只有 error/warning 與一行摘要，不需要再額外過濾。
+- 單元檔與圖檔通常各 300–700 行。修改時用 Grep 找到目標小節，再以 Read 的 offset／limit 只讀該段。
+- 新增單元時只讀一個既有單元的一個小節與附錄當格式範例。
+- 長篇來源（超過 60 頁）先列出小節規劃與頁碼對應，再分段撰寫。
 
 ### 完成回報格式
 
-回報時列出：新增／修改的檔案、`check: X error(s), Y warning(s)` 結果、需要使用者在瀏覽器確認的頁面路徑。
+列出新增／修改的檔案、來源涵蓋頁碼、AGENTS.md §8 的確認結果，以及需要使用者在瀏覽器確認的頁面路徑。

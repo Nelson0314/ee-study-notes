@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""依 course.json 的登錄資料，由 templates/chapter.md 建立新章節。
+"""依 course.json 的登錄資料，由 templates/chapter.md 建立新單元。
 
 用法：python tools/new_chapter.py <course> <no>
   例：python tools/new_chapter.py electronics 8
@@ -45,7 +45,7 @@ def main():
         FIG_STUB.format(no=no, nn='%02d' % no, slug=ch['slug']))
     print('建立：%s' % os.path.relpath(md, ROOT))
     print('建立：%s' % os.path.relpath(js, ROOT))
-    print('下一步：依 AGENTS.md §4–§7 撰寫內容，完成後執行 python tools/build.py')
+    print('下一步：依 AGENTS.md §3–§7 撰寫內容，完成後執行 python tools/build.py')
 
 
 if __name__ == '__main__':

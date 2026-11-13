@@ -3,25 +3,53 @@
 
 用法：python tools/build.py
 流程：
-  1. 執行 tools/check.py 的所有規則；有 ERROR 即中止，不產生任何檔案。
-  2. 清空並重建 docs/。
-  3. 複製 assets/ 與各課程的 lib.js、figs/*.js。
-  4. 依 content/<course>/chNN-<slug>.md 產生章節頁；依 course.json 產生課程頁；依 site.json 產生首頁。
-  5. 把 AGENTS.md 轉成 docs/guide.html（站上的「編寫規範」頁）。
+  1. 清空並重建 docs/。
+  2. 複製 assets/ 與各主題的 lib.js、figs/*.js。
+  3. 依 content/<topic>/chNN-<slug>.md 產生單元頁；依 course.json 產生主題頁；依 site.json 產生首頁。
+  4. 把 AGENTS.md 轉成 docs/guide.html（站上的「編寫規範」頁）。
+本腳本只負責轉換，不檢查內容；內容是否符合 AGENTS.md 由撰寫者（人或 AI）依 §8 自我檢查。
 docs/ 內的檔案一律由本腳本產生，不得手動修改。
 """
 import html, io, json, os, re, shutil, sys
 
 import markdown
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import check  # noqa: E402
-
-ROOT = check.ROOT
-CONTENT = check.CONTENT
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTENT = os.path.join(ROOT, 'content')
 OUT = os.path.join(ROOT, 'docs')
 MARKERS = io.open(os.path.join(ROOT, 'templates', '_markers.svg'), encoding='utf-8').read()
 MD_EXT = ['tables', 'md_in_html', 'fenced_code', 'sane_lists']
+
+
+def parse_frontmatter(text):
+    """極簡 YAML：只支援 `key: value` 單行。沒有 frontmatter 時回傳空 dict。"""
+    m = re.match(r'^---\n(.*?)\n---\n', text, re.S)
+    if not m:
+        return {}, text
+    fm = {}
+    for line in m.group(1).split('\n'):
+        if ':' in line:
+            k, v = line.split(':', 1)
+            fm[k.strip()] = v.strip()
+    return fm, text[m.end():]
+
+
+def section_id(no):
+    """h2 id：0→intro、附錄→app、x.y→sec-x-y；無編號的標題依序編為 sec-n。"""
+    if no == '0':
+        return 'intro'
+    if no == '附錄':
+        return 'app'
+    return 'sec-' + no.replace('.', '-')
+
+
+def chapter_files(slug):
+    d = os.path.join(CONTENT, slug)
+    return sorted(f for f in os.listdir(d) if re.match(r'^ch\d{2}-.*\.md$', f))
+
+
+def unit(course):
+    return course.get('unit_label', '章')
 
 
 def esc(s):
@@ -76,8 +104,9 @@ def header(h1, sub, crumb=''):
 
 # ---------------------------------------------------------------- chapter
 def render_chapter(course, ch, md_path, prev, nxt, site):
-    fm, body = check.parse_frontmatter(io.open(md_path, encoding='utf-8').read())
+    fm, body = parse_frontmatter(io.open(md_path, encoding='utf-8').read())
     n = ch['no']
+    u = unit(course)
     h = markdown.markdown(body, extensions=MD_EXT)
 
     toc, state = [], {'h2': None, 'k': 0}
@@ -86,7 +115,7 @@ def render_chapter(course, ch, md_path, prev, nxt, site):
         level, inner = mo.group(1), mo.group(2).strip()
         if level == '2':
             no, _, title = inner.partition(' ')
-            hid = check.section_id(no)
+            hid = section_id(no)
             state['h2'], state['k'] = hid, 0
             toc.append([hid, '%s　%s' % (no, title), []])
             return '<h2 id="%s"><span class="no">%s</span>%s</h2>' % (hid, no, title)
@@ -110,10 +139,10 @@ def render_chapter(course, ch, md_path, prev, nxt, site):
     def pager_link(c, cls, label):
         if not c:
             return '<span></span>'
-        return '<a class="%s" href="ch%02d.html"><small>%s</small>第 %d 章　%s</a>' % (cls, c['no'], label, c['no'], esc(c['title']))
+        return '<a class="%s" href="ch%02d.html"><small>%s</small>第 %d %s　%s</a>' % (cls, c['no'], label, c['no'], u, esc(c['title']))
 
-    crumb = '<a href="../index.html">%s</a> / <a href="index.html">%s</a> / 第 %d 章' % (esc(site['title']), esc(course['title']), n)
-    sub = '%s Chapter %d — %s　·　圖解教材' % (esc(course['textbook_short']), n, esc(ch['title_en']))
+    crumb = '<a href="../index.html">%s</a> / <a href="index.html">%s</a> / 第 %d %s' % (esc(site['title']), esc(course['title']), n, u)
+    sub = '%s — %s　·　來源：%s' % (esc(course.get('source_short', course['title'])), esc(ch.get('title_en', '')), esc(ch.get('source', '')))
     body_html = """{header}
 
 <div class="layout">
@@ -131,20 +160,20 @@ def render_chapter(course, ch, md_path, prev, nxt, site):
 <nav class="pager">{prev}{next}</nav>
 <p style="color:var(--muted);font-size:14px;margin-top:40px">{disc}<br>來源：{src}　·　最後更新：{upd}</p>
 </main>
-</div>""".format(header=header('第 %d 章　%s' % (n, esc(ch['title'])), sub, crumb), toc=toc_html, n=n, content=h,
-                 prev=pager_link(prev, 'pv', '← 上一章'), next=pager_link(nxt, 'nx', '下一章 →'),
-                 disc=esc(course.get('disclaimer', '')), src=esc(ch['source']), upd=esc(fm['updated']))
+</div>""".format(header=header('第 %d %s　%s' % (n, u, esc(ch['title'])), sub, crumb), toc=toc_html, n=n, content=h,
+                 prev=pager_link(prev, 'pv', '← 上一' + u), next=pager_link(nxt, 'nx', '下一%s →' % u),
+                 disc=esc(course.get('disclaimer', '')), src=esc(ch.get('source', '')), upd=esc(fm.get('updated', '')))
 
     scripts = ['js/%s' % s for s in course.get('scripts', [])]
     if os.path.exists(os.path.join(CONTENT, course['slug'], 'figs', 'ch%02d.js' % n)):
         scripts.append('js/figs/ch%02d.js' % n)
-    return page('第 %d 章　%s｜%s' % (n, ch['title'], course['title']), body_html, 1, site, scripts, fm['summary'])
+    return page('第 %d %s　%s｜%s' % (n, u, ch['title'], course['title']), body_html, 1, site, scripts, fm.get('summary', ''))
 
 
 # ---------------------------------------------------------------- course & home
 def chapter_status(course):
     files = {}
-    for f in check.chapter_files(course['slug']):
+    for f in chapter_files(course['slug']):
         m = re.match(r'^ch(\d{2})-', f)
         if m:
             files[int(m.group(1))] = os.path.join(CONTENT, course['slug'], f)
@@ -156,7 +185,7 @@ def render_course(course, files, site):
     for ch in course['chapters']:
         n = ch['no']
         if n in files:
-            fm, _ = check.parse_frontmatter(io.open(files[n], encoding='utf-8').read())
+            fm, _ = parse_frontmatter(io.open(files[n], encoding='utf-8').read())
             name = '<a href="ch%02d.html">%s</a><span class="en">%s</span><span class="en">%s</span>' % (
                 n, esc(ch['title']), esc(ch['title_en']), esc(fm['summary']))
             st = '<span class="st done">已完成 · %s</span>' % esc(fm['updated'])
@@ -167,15 +196,15 @@ def render_course(course, files, site):
     crumb = '<a href="../index.html">%s</a> / %s' % (esc(site['title']), esc(course['title']))
     body = """{header}
 <div class="page">
-<p>課本：{tb}</p>
+<p>來源：{tb}</p>
 <p>{desc}</p>
-<h2>章節</h2>
+<h2>單元</h2>
 <ol class="chlist">
 {rows}
 </ol>
 </div>""".format(header=header('%s　%s' % (esc(course['title']), esc(course['title_en'])),
-                               '已完成 %d / %d 章' % (len(files), len(course['chapters'])), crumb),
-                 tb=esc(course['textbook']), desc=esc(course['description']), rows='\n'.join(rows))
+                               '已完成 %d / %d %s' % (len(files), len(course['chapters']), unit(course)), crumb),
+                 tb=esc(course.get('source', '—')), desc=esc(course['description']), rows='\n'.join(rows))
     return page('%s｜%s' % (course['title'], site['title']), body, 1, site, (), course['description'])
 
 
@@ -185,27 +214,27 @@ def render_home(courses, site):
         cards.append("""<a class="card" href="{slug}/index.html">
   <h3>{t}　<small style="color:var(--muted);font-weight:400">{en}</small></h3>
   <p>{d}</p>
-  <div class="meta">已完成 {done} / {total} 章 · {tb}</div>
+  <div class="meta">已完成 {done} / {total} {u} · {tb}</div>
 </a>""".format(slug=c['slug'], t=esc(c['title']), en=esc(c['title_en']), d=esc(c['description']),
-               done=len(files), total=len(c['chapters']), tb=esc(c['textbook_short'])))
+               done=len(files), total=len(c['chapters']), u=unit(c), tb=esc(c.get('source_short', ''))))
     latest = []
     for c, files in courses:
         for ch in c['chapters']:
             if ch['no'] in files:
-                fm, _ = check.parse_frontmatter(io.open(files[ch['no']], encoding='utf-8').read())
+                fm, _ = parse_frontmatter(io.open(files[ch['no']], encoding='utf-8').read())
                 latest.append((fm['updated'], c, ch, fm))
     latest.sort(key=lambda x: (x[0], x[2]['no']), reverse=True)
     items = '\n'.join(
-        '<li><span class="n">%s</span><span><a href="%s/ch%02d.html">%s 第 %d 章　%s</a><span class="en">%s</span></span></li>' % (
-            esc(u), c['slug'], ch['no'], esc(c['title']), ch['no'], esc(ch['title']), esc(fm['summary']))
+        '<li><span class="n">%s</span><span><a href="%s/ch%02d.html">%s 第 %d %s　%s</a><span class="en">%s</span></span></li>' % (
+            esc(u), c['slug'], ch['no'], esc(c['title']), ch['no'], unit(c), esc(ch['title']), esc(fm.get('summary', '')))
         for u, c, ch, fm in latest[:6])
     body = """{header}
 <div class="page">
 <div class="goal"><b>本站的頁面怎麼產生：</b>
 <ul>
-  <li>每一章是一個 Markdown 檔（<code>content/&lt;課程&gt;/chNN-&lt;slug&gt;.md</code>），使用固定的章節骨架與元件。</li>
-  <li><code>tools/check.py</code> 依 <a href="guide.html">編寫規範</a> 驗證結構，<code>tools/build.py</code> 產生全部頁面。</li>
-  <li>新增一章只需：在 <code>course.json</code> 登錄 → 依範本撰寫 Markdown → 執行 build。</li>
+  <li>來源可以是任何科目的課本章節、上課簡報、論文或講義；每一份整理成一個單元（Markdown 檔）。</li>
+  <li>所有單元共用同一套頁面骨架與元件，撰寫方式寫在 <a href="guide.html">編寫規範</a>（AGENTS.md）。</li>
+  <li>新增內容的流程：在 <code>course.json</code> 登錄 → 依範本撰寫 Markdown → 執行 <code>tools/build.py</code>。</li>
 </ul></div>
 <h2 id="courses">課程</h2>
 <div class="cards">
@@ -234,13 +263,6 @@ def render_guide(site):
 def main():
     if hasattr(sys.stdout, 'reconfigure'):
         sys.stdout.reconfigure(encoding='utf-8')
-    rep = check.run()
-    for line in rep.warnings + rep.errors:
-        print(line)
-    if rep.errors:
-        print('build aborted: %d error(s). 修正後再執行。' % len(rep.errors))
-        sys.exit(1)
-
     site = json.loads(io.open(os.path.join(ROOT, 'site.json'), encoding='utf-8').read())
     if os.path.isdir(OUT):
         shutil.rmtree(OUT)
@@ -268,7 +290,7 @@ def main():
 
     write(os.path.join(OUT, 'index.html'), render_home(courses, site))
     write(os.path.join(OUT, 'guide.html'), render_guide(site))
-    print('build: %d chapter page(s), %d course(s) -> docs/' % (count, len(courses)))
+    print('build: %d unit page(s), %d topic(s) -> docs/' % (count, len(courses)))
 
 
 if __name__ == '__main__':

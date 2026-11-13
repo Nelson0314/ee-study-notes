@@ -1,6 +1,6 @@
 {
-  "title": "EE Notes",
-  "subtitle": "電機課程圖解講義：互動圖、例題詳解與自我測驗",
+  "title": "Study Notes",
+  "subtitle": "把課本、簡報、論文與講義整理成圖解教材：互動圖、例題詳解與自我測驗",
   "base_url": "https://nelson0314.github.io/ee-study-notes/",
   "courses": [
     "electronics"

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>編寫規範｜EE Notes</title>
+<title>編寫規範｜Study Notes</title>
 <meta name="description" content="本站的專案規則（AGENTS.md）">
 <link rel="stylesheet" href="assets/css/notes.css">
 </head>
@@ -21,7 +21,7 @@
 </svg>
 
 <div class="sitebar"><div class="in">
-  <a class="brand" href="index.html">EE Notes</a>
+  <a class="brand" href="index.html">Study Notes</a>
   <a href="index.html#courses">課程</a>
   <a href="guide.html">編寫規範</a>
   <span class="sp"></span>
@@ -39,42 +39,65 @@
 <p>本文件是本專案唯一的規則來源，供 AI agent（Claude Code、Codex 等）與人類協作者共用。<code>CLAUDE.md</code> 以 <code>@AGENTS.md</code> 匯入本文件；網站的「編寫規範」頁（<code>docs/guide.html</code>）也由本文件直接產生。修改規則時只改這一份。</p>
 <hr />
 <h2 id="0">§0 專案目的</h2>
-<p>EE Notes 是電機系課程的<strong>圖解講義網站</strong>。每一章講義把教材（課本章節、上課投影片）整理成：</p>
+<p>Study Notes 把<strong>任何科目、任何形式的學習材料</strong>整理成圖解教材網頁。輸入可以是課本章節、上課簡報、學術論文、講義、筆記或掃描檔；輸出是一個結構固定的單元頁，包含：</p>
 <ol>
-<li>依教材原順序、不遺漏概念的完整說明；</li>
-<li>以 SVG 繪製的電路圖、特性曲線與可拖動參數的互動圖；</li>
-<li>每個小節的例題與練習（詳解預設折疊）；</li>
-<li>章末附錄：公式總表、常見陷阱、自我測驗、名詞中英對照。</li>
+<li>依來源原順序、不遺漏概念的完整說明；</li>
+<li>圖解（SVG 示意圖、函數圖、流程圖、互動圖），只在能幫助理解時加入；</li>
+<li>每個小節的例題或練習（詳解預設折疊）；</li>
+<li>單元附錄：重點總表、常見誤解、自我測驗、名詞中英對照。</li>
 </ol>
-<p>讀者用途是考前複習與自學。目標是<strong>任何一章都能用同一套骨架、元件與流程產出</strong>，新增一章不需要重新設計版面。</p>
+<p>讀者用途是考前複習、自學與論文閱讀。目標是<strong>不論來源是什麼，都能用同一套骨架、元件與流程產出一個單元</strong>，新增內容不需要重新設計版面。</p>
 <p>非目標：不做帳號、留言、搜尋後端；不引入前端框架、CDN 或建置工具鏈（只用 Python 標準函式庫 + <code>markdown</code> 套件）。</p>
+<p>目前的內容（電子學）是第一個主題，用來示範規則；規則本身不綁定任何科目。</p>
 <hr />
-<h2 id="1">§1 目錄結構</h2>
+<h2 id="1">§1 名詞與目錄結構</h2>
+<table>
+<thead>
+<tr>
+<th>名詞</th>
+<th>意義</th>
+<th>範例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>主題（topic）</td>
+<td>一組相關單元，對應 <code>content/&lt;topic&gt;/</code> 一個資料夾</td>
+<td>一門課、一本書、一個研究方向的論文集</td>
+</tr>
+<tr>
+<td>單元（unit）</td>
+<td>一個 Markdown 檔，對應網站上的一頁</td>
+<td>課本一章、一份簡報、一篇論文</td>
+</tr>
+<tr>
+<td>單元標籤</td>
+<td>頁面上「第 N ○」的量詞，由主題設定</td>
+<td>課本用「章」、上課簡報用「講」、論文集用「篇」</td>
+</tr>
+</tbody>
+</table>
 <pre><code>ee-study-notes/
 ├── AGENTS.md                 ← 本文件（規則唯一來源）
 ├── CLAUDE.md                 ← Claude Code 入口：匯入本文件 + Claude 專用說明
-├── README.md                 ← 給 GitHub 訪客的簡介
-├── site.json                 ← 站名、副標、課程清單與顯示順序
+├── README.md
+├── site.json                 ← 站名、副標、主題清單與顯示順序
 ├── content/                  ← 【唯一需要手寫的內容】
-│   └── &lt;course&gt;/             ← 一門課一個資料夾，名稱 = 課程 slug
-│       ├── course.json       ← 課程資訊 + 全部章節的登錄表（含規劃中章節）
-│       ├── lib.js            ← （選用）該課程共用的繪圖原語，如電路元件
-│       ├── chNN-&lt;slug&gt;.md    ← 一章一檔
-│       └── figs/chNN.js      ← （選用）該章所有圖與互動元件的程式
-├── assets/
-│   ├── css/notes.css         ← 全站唯一樣式表
-│   └── js/core.js, theme.js  ← 全站共用：SVG 輔助函式、plot()、深淺色切換
-├── templates/
-│   ├── chapter.md            ← 新章節範本（骨架與每種元件的寫法）
-│   └── _markers.svg          ← SVG 箭頭定義，模板自動嵌入每頁
-├── tools/
-│   ├── check.py              ← 規則檢查器（§8 的 R1–R11）
-│   ├── build.py              ← 檢查通過後產生 docs/
-│   └── new_chapter.py        ← 由範本建立新章節檔
-├── .claude/skills/add-chapter/SKILL.md  ← Claude Code 的「新增一章」工作流程
-└── docs/                     ← 【產生物】GitHub Pages 發布目錄，禁止手動修改
+│   └── &lt;topic&gt;/
+│       ├── course.json       ← 主題資訊 + 全部單元的登錄表（含規劃中的單元）
+│       ├── lib.js            ← （選用）該主題共用的繪圖函式，例如電路元件、分子結構
+│       ├── chNN-&lt;slug&gt;.md    ← 一個單元一個檔
+│       └── figs/chNN.js      ← （選用）該單元的圖與互動元件
+├── assets/css/notes.css      ← 全站唯一樣式表
+├── assets/js/core.js, theme.js ← 全站共用：SVG 輔助函式、plot()、深淺色切換
+├── templates/chapter.md      ← 新單元範本
+├── templates/_markers.svg    ← SVG 箭頭定義，模板自動嵌入每頁
+├── tools/build.py            ← 產生 docs/
+├── tools/new_chapter.py      ← 由範本建立新單元
+├── .claude/skills/add-unit/SKILL.md ← Claude Code 的「新增一個單元」工作流程
+└── docs/                     ← 【產生物】GitHub Pages 發布目錄，不手動修改
 </code></pre>
-<p>資料流：<code>content/*.md</code> + <code>course.json</code> →（<code>check.py</code> 驗證）→ <code>build.py</code> → <code>docs/*.html</code>。</p>
+<p>資料流：<code>content/*.md</code> + <code>course.json</code> → <code>tools/build.py</code> → <code>docs/*.html</code>。</p>
 <hr />
 <h2 id="2">§2 命名規則</h2>
 <table>
@@ -87,123 +110,187 @@
 </thead>
 <tbody>
 <tr>
-<td>課程資料夾 / 課程 slug</td>
+<td>主題資料夾 / slug</td>
 <td>小寫英文 kebab-case，與 <code>course.json</code> 的 <code>slug</code> 相同</td>
-<td><code>electronics</code>、<code>signals-systems</code></td>
+<td><code>electronics</code>、<code>linear-algebra</code>、<code>llm-papers</code></td>
 </tr>
 <tr>
-<td>章節檔</td>
-<td><code>chNN-&lt;slug&gt;.md</code>，NN 為兩位數章號，slug 與 <code>course.json</code> 中該章相同</td>
-<td><code>ch03-diode-models.md</code></td>
+<td>單元檔</td>
+<td><code>chNN-&lt;slug&gt;.md</code>，NN 為兩位數序號，slug 與 <code>course.json</code> 中該單元相同</td>
+<td><code>ch03-diode-models.md</code>、<code>ch01-attention-is-all-you-need.md</code></td>
 </tr>
 <tr>
-<td>章節圖檔</td>
-<td><code>figs/chNN.js</code>，章號與章節檔相同</td>
+<td>單元圖檔</td>
+<td><code>figs/chNN.js</code></td>
 <td><code>figs/ch03.js</code></td>
 </tr>
 <tr>
 <td>輸出頁</td>
-<td>由 build 決定：<code>docs/&lt;course&gt;/chNN.html</code></td>
+<td><code>docs/&lt;topic&gt;/chNN.html</code>（由 build 產生）</td>
 <td><code>docs/electronics/ch03.html</code></td>
 </tr>
 <tr>
 <td>SVG 元素 id</td>
-<td>小寫、以 <code>f-</code>（圖）、<code>e</code>（例題圖，如 <code>e31</code>）、<code>p</code>（練習圖，如 <code>p31a</code>）開頭；同一章內不得重複</td>
+<td>小寫、以 <code>f-</code>（圖）、<code>e</code>（例題圖）、<code>p</code>（練習圖）開頭；同一單元內不重複</td>
 <td><code>f-ideal</code>、<code>e36</code></td>
-</tr>
-<tr>
-<td>互動控制 id</td>
-<td>以該互動圖的 2–3 字母前綴開頭</td>
-<td><code>tcVB</code>、<code>tcVBo</code>（輸出值）</td>
 </tr>
 </tbody>
 </table>
-<p>章號以<strong>課本章號</strong>為準，不以投影片編號為準；投影片編號寫在 <code>course.json</code> 的 <code>source</code>。</p>
+<p>序號的決定方式：課本用課本章號；簡報用上課順序；論文集用加入順序。原始編號（投影片編號、論文出處）寫在 <code>course.json</code> 的 <code>source</code>。</p>
 <hr />
-<h2 id="3">§3 新增或修改內容的流程</h2>
-<h3 id="31">3.1 新增一章</h3>
+<h2 id="3">§3 新增內容的流程</h2>
+<h3 id="31">3.1 新增一個單元</h3>
 <ol>
-<li><strong>登錄</strong>：確認該章已列在 <code>content/&lt;course&gt;/course.json</code> 的 <code>chapters</code>（<code>no</code>、<code>slug</code>、<code>title</code>、<code>title_en</code>、<code>source</code>）。未列出就先加入，<code>no</code> 維持遞增。</li>
-<li><strong>建立檔案</strong>：<code>python tools/new_chapter.py &lt;course&gt; &lt;no&gt;</code>。腳本依 <code>course.json</code> 從 <code>templates/chapter.md</code> 產生 <code>chNN-&lt;slug&gt;.md</code>，並建立空白的 <code>figs/chNN.js</code>。</li>
-<li><strong>讀教材</strong>：PDF 一次最多讀 20 頁，連續不跳頁。記下總頁數，整理完後確認每一頁的概念都已落入某個小節。</li>
-<li><strong>撰寫</strong>：依 §4 骨架與 §5 元件撰寫；依 §6 寫作規範用自己的文字說明。</li>
-<li><strong>畫圖</strong>：在 <code>.md</code> 放 <code>&lt;svg id="..."&gt;</code> 佔位，在 <code>figs/chNN.js</code> 中繪製（§7）。</li>
-<li><strong>驗證與產生</strong>：<code>python tools/build.py</code>。build 會先跑 <code>check.py</code>，任何 ERROR 都會中止；依訊息中的規則編號（R1–R11）修正後重跑。</li>
-<li><strong>目視確認</strong>：用瀏覽器開 <code>docs/&lt;course&gt;/chNN.html</code>，確認圖都有畫出、互動控制可用、深色模式可讀、手機寬度不跑版。</li>
+<li><strong>選主題</strong>：內容屬於既有主題就加入該主題；否則依 3.4 建立新主題。</li>
+<li><strong>登錄</strong>：在 <code>content/&lt;topic&gt;/course.json</code> 的 <code>chapters</code> 加入一筆（<code>no</code>、<code>slug</code>、<code>title</code>、<code>title_en</code>、<code>source</code>）。</li>
+<li><strong>建立檔案</strong>：<code>python tools/new_chapter.py &lt;topic&gt; &lt;no&gt;</code>，由範本產生 <code>chNN-&lt;slug&gt;.md</code> 與 <code>figs/chNN.js</code>。</li>
+<li><strong>讀來源</strong>：依 3.2 的方式讀完整份材料，記下總頁數。</li>
+<li><strong>規劃小節</strong>：依 3.3 選定骨架，列出每個小節涵蓋的頁碼範圍，確認每一頁都有歸屬。</li>
+<li><strong>撰寫</strong>：依 §4 骨架、§5 元件、§6 寫作規範撰寫。</li>
+<li><strong>畫圖</strong>（選用）：在 <code>.md</code> 放 <code>&lt;svg id="..."&gt;</code>，在 <code>figs/chNN.js</code> 繪製（§7）。</li>
+<li><strong>產生網站</strong>：<code>python tools/build.py</code>，再以 <code>python -m http.server -d docs 8000</code> 在瀏覽器確認。</li>
+<li><strong>自我檢查</strong>：逐項確認 §8 清單。</li>
 </ol>
-<h3 id="32">3.2 修改既有章節</h3>
+<h3 id="32">3.2 各類來源的讀法</h3>
+<table>
+<thead>
+<tr>
+<th>來源</th>
+<th>讀法</th>
+<th>整理重點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>課本章節</td>
+<td>依頁碼連續閱讀</td>
+<td>定義、定理、推導中使用的假設、例題、章末習題類型</td>
+</tr>
+<tr>
+<td>上課簡報</td>
+<td>逐張閱讀；簡報文字常不完整，需補上口頭說明才會出現的推理步驟</td>
+<td>每張投影片的結論、圖表代表的意義、授課者標示的重點</td>
+</tr>
+<tr>
+<td>學術論文</td>
+<td>先讀摘要、引言末段（貢獻）與結論，再讀方法與實驗</td>
+<td>研究問題、方法、實驗設定與結果數字、限制、與先前研究的差異</td>
+</tr>
+<tr>
+<td>講義／筆記</td>
+<td>依原順序閱讀</td>
+<td>補足省略的步驟；不同來源說法衝突時並列並標注出處</td>
+</tr>
+<tr>
+<td>掃描檔／照片</td>
+<td>以圖片方式讀取，逐頁辨識文字與圖表</td>
+<td>辨識不清處標注「（原文不清）」，不自行猜測數值</td>
+</tr>
+</tbody>
+</table>
+<p>讀取方式：</p>
 <ul>
-<li>只改 <code>content/</code> 下的檔案，然後重跑 <code>python tools/build.py</code>。</li>
-<li>小節編號變動時，同步檢查頁內 <code>href="#sec-…"</code> 錨點（R10 會擋下失效連結）。</li>
-<li>修改後更新 frontmatter 的 <code>updated</code>。</li>
+<li>PDF：以 Read 工具的 <code>pages</code> 參數一次最多讀 20 頁、連續不跳頁。環境無法渲染 PDF 頁面時，改用 <code>pypdf</code> 擷取文字，圖表內容另行開啟原檔確認。</li>
+<li><code>.pptx</code>、<code>.docx</code>：先轉成 PDF 或以對應套件擷取文字，再依上表處理。</li>
+<li>多個來源組成一個單元時：以主要來源（通常是上課簡報）決定小節順序，其他來源併入對應小節，並在文中標注出處（例：「課本 §7.2」）。</li>
 </ul>
-<h3 id="33">3.3 新增一門課</h3>
+<h3 id="33">3.3 依來源類型選擇骨架</h3>
+<p>所有單元都使用 §4 的外框（導覽 → 編號小節 → 附錄）；編號小節的切分方式依來源而定：</p>
+<table>
+<thead>
+<tr>
+<th>來源類型</th>
+<th>小節切分建議</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>課本／講義</td>
+<td>依原書小節；相關概念合併，每單元 3–8 節</td>
+</tr>
+<tr>
+<td>上課簡報</td>
+<td>依簡報的主題轉換處切分，不要一張投影片一節</td>
+</tr>
+<tr>
+<td>學術論文</td>
+<td>研究背景與問題 → 方法 → 實驗設定 → 結果 → 討論與限制（必要時加「與相關研究比較」）</td>
+</tr>
+<tr>
+<td>文史、法政等非計算科目</td>
+<td>依主題或時序切分；例題改為「情境分析」或「申論題擬答」</td>
+</tr>
+</tbody>
+</table>
+<h3 id="34">3.4 新增一個主題</h3>
 <ol>
-<li>建立 <code>content/&lt;course&gt;/course.json</code>（欄位見 §4.1；可複製 <code>electronics</code> 的檔案改寫）。</li>
-<li>在 <code>site.json</code> 的 <code>courses</code> 陣列加入課程 slug。</li>
-<li>該課程若需要專屬繪圖原語（例如訊號與系統的頻譜圖），寫在 <code>content/&lt;course&gt;/lib.js</code> 並列入 <code>course.json</code> 的 <code>scripts</code>；跨課程通用的函式才放進 <code>assets/js/core.js</code>。</li>
-<li>依 3.1 新增第一章。首頁的課程卡片與課程頁由 build 自動產生。</li>
+<li>建立 <code>content/&lt;topic&gt;/course.json</code>（欄位見 §4.1）。<code>unit_label</code> 依來源設定：課本「章」、簡報「講」、論文「篇」。</li>
+<li>在 <code>site.json</code> 的 <code>courses</code> 加入 slug。</li>
+<li>需要專用繪圖函式（例如化學結構、地圖、樂譜）時寫在 <code>content/&lt;topic&gt;/lib.js</code>，並列入 <code>course.json</code> 的 <code>scripts</code>。</li>
+<li>依 3.1 新增第一個單元。首頁卡片、主題頁、上下單元導覽由 build 自動產生。</li>
 </ol>
+<h3 id="35">3.5 修改既有單元</h3>
+<p>只改 <code>content/</code> 下的檔案，修改後更新 frontmatter 的 <code>updated</code>，重跑 <code>python tools/build.py</code>。</p>
 <hr />
-<h2 id="4">§4 章節骨架</h2>
+<h2 id="4">§4 單元骨架</h2>
 <h3 id="41-coursejson">4.1 <code>course.json</code></h3>
 <pre><code class="language-json">{
-  &quot;slug&quot;: &quot;electronics&quot;,
-  &quot;title&quot;: &quot;電子學&quot;,
-  &quot;title_en&quot;: &quot;Microelectronics&quot;,
-  &quot;textbook&quot;: &quot;完整書目&quot;,
-  &quot;textbook_short&quot;: &quot;頁首副標使用的短書名&quot;,
-  &quot;description&quot;: &quot;課程卡片上的一句說明&quot;,
-  &quot;scripts&quot;: [&quot;lib.js&quot;],
-  &quot;disclaimer&quot;: &quot;每章頁尾的來源聲明&quot;,
+  &quot;slug&quot;: &quot;llm-papers&quot;,
+  &quot;title&quot;: &quot;大型語言模型論文選讀&quot;,
+  &quot;title_en&quot;: &quot;Readings in Large Language Models&quot;,
+  &quot;unit_label&quot;: &quot;篇&quot;,
+  &quot;source&quot;: &quot;完整出處（書目、課程名稱、論文清單說明）&quot;,
+  &quot;source_short&quot;: &quot;頁首副標使用的短名稱&quot;,
+  &quot;description&quot;: &quot;主題卡片上的一句說明&quot;,
+  &quot;scripts&quot;: [],
+  &quot;disclaimer&quot;: &quot;每頁頁尾的來源聲明&quot;,
   &quot;chapters&quot;: [
-    {&quot;no&quot;: 3, &quot;slug&quot;: &quot;diode-models&quot;, &quot;title&quot;: &quot;二極體模型與電路&quot;,
-     &quot;title_en&quot;: &quot;Diode Models and Circuits&quot;, &quot;source&quot;: &quot;Slide 3；課本 Ch.3&quot;}
+    {&quot;no&quot;: 1, &quot;slug&quot;: &quot;attention-is-all-you-need&quot;, &quot;title&quot;: &quot;Transformer 架構&quot;,
+     &quot;title_en&quot;: &quot;Attention Is All You Need&quot;, &quot;source&quot;: &quot;Vaswani et al., NeurIPS 2017&quot;}
   ]
 }
 </code></pre>
-<p><code>chapters</code> 同時是<strong>進度表</strong>：有對應 <code>.md</code> 的章節顯示為「已完成」並產生頁面，沒有的顯示為「規劃中」。</p>
-<h3 id="42">4.2 章節檔結構</h3>
+<p><code>chapters</code> 同時是<strong>進度表</strong>：有對應 <code>.md</code> 的單元顯示為「已完成」，沒有的顯示為「規劃中」。<code>unit_label</code>、<code>source</code>、<code>source_short</code>、<code>scripts</code>、<code>disclaimer</code> 可省略。</p>
+<h3 id="42">4.2 單元檔結構</h3>
 <pre><code class="language-markdown">---
 chapter: 3
-summary: 一句話說明本章涵蓋的內容（顯示於課程頁與首頁）
-updated: 2026-11-13
+summary: 一句話說明本單元涵蓋的內容（顯示於主題頁與首頁）
+updated: 2026-11-14
 ---
 
 ## 0 本章導覽
-（本章與前後章的關係、.flow 學習路線、.goal 學習目標）
+（與前後單元的關係、本單元要回答的核心問題、.flow 學習路線、.goal 學習目標）
 
 ## 3.1 第一個大主題
 ### 1　子主題
-…（說明、圖、例題、練習）
-
-## 3.2 第二個大主題
 …
 
-## 附錄 公式・陷阱・測驗
-### A　公式總表
-### B　常見陷阱
+## 附錄 重點・誤解・測驗
+### A　重點總表
+### B　常見誤解
 ### C　自我測驗
 ### D　名詞對照表
 </code></pre>
 <p>規則：</p>
 <ul>
-<li>不寫 <code>#</code>（h1）。頁標題「第 N 章　標題」與副標由模板依 <code>course.json</code> 產生。</li>
-<li>第一節固定為 <code>## 0 本章導覽</code>，必須含 <code>.goal</code>；建議含 <code>.flow</code>。</li>
-<li>中間為<strong>編號小節</strong> <code>## N.x 標題</code>（或 <code>N.x.y</code>），編號必須以本章章號開頭且遞增，數量 3–8 節。以教材的大主題切分，相關概念併入同一節，以 <code>###</code> 細分。</li>
-<li><code>###</code> 子標題格式為 <code>### &lt;序號&gt;　&lt;標題&gt;</code>（序號後接全形空白），序號用 <code>1 2 3</code>；附錄用 <code>A B C D</code>。目錄顯示時會去掉序號。</li>
-<li>最後一節固定為 <code>## 附錄 …</code>，必須包含標題含「公式」「陷阱」「自我測驗」「名詞對照」的四個 <code>###</code> 子節。</li>
-<li>標題 id 由 build 自動產生：<code>0</code>→<code>intro</code>、<code>3.1</code>→<code>sec-3-1</code>、<code>附錄</code>→<code>app</code>，h3 依序加 <code>-a</code>、<code>-b</code>…（如 <code>sec-3-1-a</code>）。頁內連結一律使用這組 id。</li>
+<li>不寫 h1；頁標題「第 N 章／講／篇　標題」由模板產生。</li>
+<li>第一節為 <code>## 0 本章導覽</code>，含 <code>.goal</code>（學習目標），建議含 <code>.flow</code>（學習路線）。</li>
+<li>中間為編號小節 <code>## N.x 標題</code>，編號以單元序號開頭、遞增；以 <code>###</code> 細分，格式為 <code>### &lt;序號&gt;　&lt;標題&gt;</code>（序號後接全形空白）。</li>
+<li>最後一節為 <code>## 附錄 …</code>，包含四個子節：</li>
+<li><strong>重點總表</strong>：理工科為公式表；論文為「方法—結果—限制」表；文史科為人物、年代、概念對照表。</li>
+<li><strong>常見誤解</strong>：易混淆的概念與錯誤做法。</li>
+<li><strong>自我測驗</strong>：至少 5 題，題型混合。</li>
+<li><strong>名詞對照表</strong>：中文、English 兩欄。</li>
+<li>標題 id 由 build 自動產生：<code>0</code>→<code>intro</code>、<code>3.1</code>→<code>sec-3-1</code>、<code>附錄</code>→<code>app</code>，h3 依序加 <code>-a</code>、<code>-b</code>…。頁內連結使用這組 id。</li>
 </ul>
-<h3 id="43">4.3 內容密度要求</h3>
+<h3 id="43">4.3 內容密度</h3>
 <ul>
-<li>每個編號小節至少一個 <code>.box.ex</code>（例題）或 <code>.practice</code>（練習）（R6）。建議每節都有可折疊詳解的 <code>details.q</code>。</li>
-<li>附錄自我測驗至少 5 題（R7），題型涵蓋計算、是非、觀念解釋。</li>
-<li>名詞對照表收錄本章所有首次出現時標註英文的術語。</li>
+<li>每個編號小節至少一個例題（<code>.box.ex</code>）或練習（<code>.practice</code>）。非計算科目的「例題」可以是案例分析、原文段落解讀或申論擬答。</li>
+<li>論文單元的練習以理解題為主，例如「若移除某個元件，預期哪項結果會改變」「這個實驗設定排除了哪種替代解釋」。</li>
 </ul>
 <hr />
-<h2 id="5">§5 元件規格</h2>
-<p>章節檔是 Markdown；以下元件以 <strong>HTML 區塊</strong>撰寫（區塊前後各留一空行，區塊內部不留空行）。只能使用此處列出的 class（R8 白名單）；需要新元件時，先在本節定義、在 <code>assets/css/notes.css</code> 加樣式、在 <code>tools/check.py</code> 的 <code>ALLOWED_CLASSES</code> 登錄，三處同步。</p>
+<h2 id="5">§5 元件</h2>
+<p>單元檔是 Markdown；以下元件以 HTML 區塊撰寫（區塊前後各留一空行，區塊內部不留空行）。優先使用既有元件；需要新元件時，在本節補上說明並在 <code>assets/css/notes.css</code> 加樣式。</p>
 <table>
 <thead>
 <tr>
@@ -215,12 +302,12 @@ updated: 2026-11-13
 <tbody>
 <tr>
 <td><code>.flow</code> / <code>.stage</code> / <code>.arr</code></td>
-<td>本章導覽的學習路線（2–4 階段）</td>
-<td><code>&lt;div class="flow"&gt;&lt;div class="stage"&gt;&lt;h4&gt;① 模型（3.1–3.2）&lt;/h4&gt;&lt;ul&gt;…&lt;/ul&gt;&lt;/div&gt;&lt;div class="arr"&gt;➜&lt;/div&gt;…&lt;/div&gt;</code></td>
+<td>導覽的學習路線（2–4 階段）</td>
+<td><code>&lt;div class="flow"&gt;&lt;div class="stage"&gt;&lt;h4&gt;① 背景（1.1）&lt;/h4&gt;&lt;ul&gt;…&lt;/ul&gt;&lt;/div&gt;&lt;div class="arr"&gt;➜&lt;/div&gt;…&lt;/div&gt;</code></td>
 </tr>
 <tr>
 <td><code>.goal</code></td>
-<td>學習目標（「讀完本章應能：」+ 條列）</td>
+<td>學習目標</td>
 <td><code>&lt;div class="goal"&gt;&lt;b&gt;讀完本章應能：&lt;/b&gt;&lt;ul&gt;…&lt;/ul&gt;&lt;/div&gt;</code></td>
 </tr>
 <tr>
@@ -230,97 +317,87 @@ updated: 2026-11-13
 </tr>
 <tr>
 <td><code>.box.ex</code></td>
-<td>例題（綠色）：題目 + 完整解題</td>
+<td>例題、案例（綠色）</td>
 <td><code>&lt;div class="box ex"&gt;&lt;span class="tag"&gt;例題 3.1&lt;/span&gt;&lt;br&gt;…&lt;/div&gt;</code></td>
 </tr>
 <tr>
 <td><code>.box.note</code></td>
-<td>觀念說明 / 補充（灰色）</td>
+<td>觀念說明、補充（灰色）</td>
 <td><code>&lt;div class="box note"&gt;&lt;span class="tag"&gt;觀念說明：…&lt;/span&gt;…&lt;/div&gt;</code></td>
 </tr>
 <tr>
 <td><code>.box.warn</code></td>
-<td>考點 / 易錯處（橘色）</td>
+<td>考點、常見誤解（橘色）</td>
 <td><code>&lt;div class="box warn"&gt;&lt;span class="tag"&gt;易錯處&lt;/span&gt;&lt;ol&gt;…&lt;/ol&gt;&lt;/div&gt;</code></td>
 </tr>
 <tr>
-<td><code>.practice</code></td>
-<td>練習題組（紫色），內含一或多個 <code>details.q</code></td>
-<td>見下方</td>
-</tr>
-<tr>
-<td><code>details.q</code> + <code>ol.sol</code></td>
-<td>可折疊詳解；<code>summary</code> 放題目，<code>ol.sol</code> 逐步解</td>
+<td><code>.practice</code> + <code>details.q</code> + <code>ol.sol</code></td>
+<td>練習題組，詳解可折疊</td>
 <td>見下方</td>
 </tr>
 <tr>
 <td><code>figure.fig</code> + <code>figcaption</code></td>
-<td>圖；圖號由 CSS 自動編為「圖 N-k」</td>
-<td><code>&lt;figure class="fig"&gt;&lt;svg id="f-ideal"&gt;&lt;/svg&gt;&lt;figcaption&gt;…&lt;/figcaption&gt;&lt;/figure&gt;</code></td>
+<td>圖；圖號自動編為「圖 N-k」</td>
+<td><code>&lt;figure class="fig"&gt;&lt;svg id="f-x"&gt;&lt;/svg&gt;&lt;figcaption&gt;…&lt;/figcaption&gt;&lt;/figure&gt;</code></td>
 </tr>
 <tr>
 <td><code>.grid2</code></td>
-<td>兩張圖並排（手機寬度自動改單欄）</td>
-<td><code>&lt;div class="grid2"&gt;&lt;figure …&gt;…&lt;/figure&gt;&lt;figure …&gt;…&lt;/figure&gt;&lt;/div&gt;</code></td>
-</tr>
-<tr>
-<td><code>svg.sm</code> / <code>svg.md</code></td>
-<td>縮小的 SVG（符號、小電路）</td>
-<td><code>&lt;svg id="f-sym" class="sm"&gt;&lt;/svg&gt;</code></td>
+<td>兩張圖並排</td>
+<td><code>&lt;div class="grid2"&gt;&lt;figure&gt;…&lt;/figure&gt;&lt;figure&gt;…&lt;/figure&gt;&lt;/div&gt;</code></td>
 </tr>
 <tr>
 <td><code>.ctrl</code> / <code>.seg</code> / <code>.readout</code></td>
 <td>互動圖的控制列、分段按鈕、即時數值</td>
-<td>見 <code>ch03</code> 的轉移特性圖</td>
+<td>參考 <code>content/electronics/ch08-op-amp.md</code></td>
 </tr>
 <tr>
 <td><code>.eq</code>、<code>.eq.key</code></td>
-<td>獨立一行的公式；<code>.key</code> 為本章核心公式（加框）</td>
-<td><code>&lt;div class="eq key"&gt;&lt;i&gt;r&lt;/i&gt;&lt;sub&gt;d&lt;/sub&gt; = &lt;i&gt;V&lt;/i&gt;&lt;sub&gt;T&lt;/sub&gt;/&lt;i&gt;I&lt;/i&gt;&lt;sub&gt;D&lt;/sub&gt;&lt;/div&gt;</code></td>
+<td>獨立一行的公式；<code>.key</code> 為核心公式（加框）</td>
+<td><code>&lt;div class="eq key"&gt;…&lt;/div&gt;</code></td>
 </tr>
 <tr>
-<td><code>.frac</code></td>
-<td>公式中的分數</td>
+<td><code>.frac</code>、<code>.m</code></td>
+<td>分數、行內公式</td>
 <td><code>&lt;span class="frac"&gt;&lt;span&gt;分子&lt;/span&gt;&lt;span&gt;分母&lt;/span&gt;&lt;/span&gt;</code></td>
 </tr>
 <tr>
-<td><code>.m</code></td>
-<td>行內公式（斜體變數）</td>
-<td><code>&lt;span class="m"&gt;&lt;i&gt;V&lt;/i&gt;&lt;sub&gt;in&lt;/sub&gt;&lt;/span&gt;</code></td>
+<td><code>.tbl</code></td>
+<td>表格外框（Markdown 表格自動加上）</td>
+<td><code>&lt;div class="tbl"&gt;&lt;table&gt;…&lt;/table&gt;&lt;/div&gt;</code></td>
 </tr>
 <tr>
-<td><code>.tbl</code></td>
-<td>表格外框（Markdown 表格由 build 自動加上）</td>
-<td><code>&lt;div class="tbl"&gt;&lt;table&gt;…&lt;/table&gt;&lt;/div&gt;</code></td>
+<td>Markdown 引用 <code>&gt;</code></td>
+<td>引用原文（論文、文本）短句</td>
+<td><code>&gt; 原文…（出處）</code></td>
 </tr>
 </tbody>
 </table>
-<p>練習題組的標準寫法：</p>
+<p>練習題組：</p>
 <pre><code class="language-html">&lt;div class=&quot;practice&quot;&gt;&lt;span class=&quot;tag&quot;&gt;練習 3.1&lt;/span&gt;
 &lt;details class=&quot;q&quot;&gt;&lt;summary&gt;（計算）題目敘述……&lt;/summary&gt;
 &lt;ol class=&quot;sol&quot;&gt;&lt;li&gt;第一步……&lt;/li&gt;&lt;li&gt;第二步……，答案 ……。&lt;/li&gt;&lt;/ol&gt;&lt;/details&gt;
 &lt;/div&gt;
 </code></pre>
-<p>公式記法：不用 LaTeX。變數用 <code>&lt;i&gt;</code>，上下標用 <code>&lt;sub&gt;</code>／<code>&lt;sup&gt;</code>，負號用 <code>−</code>（U+2212），乘號用 <code>×</code>，約等於用 <code>≈</code>。</p>
+<p>公式記法：不用 LaTeX。變數用 <code>&lt;i&gt;</code>，上下標用 <code>&lt;sub&gt;</code>／<code>&lt;sup&gt;</code>，負號用 <code>−</code>，乘號用 <code>×</code>，約等於用 <code>≈</code>。</p>
 <hr />
 <h2 id="6">§6 寫作規範</h2>
 <ol>
-<li><strong>語言</strong>：繁體中文。專有名詞<strong>首次出現</strong>寫成「中文（English）」，之後只用中文；所有這類術語列入附錄名詞對照表。</li>
-<li><strong>語氣</strong>：客觀、精確，接近教科書。不用誇飾詞、口語語尾、生活化比喻的延伸、教練式人稱（「我們一起」「別怕」）。</li>
-<li><strong>不遺漏、照原序</strong>：依教材的小節順序撰寫；每個定義、結論、例題、圖表都要落入某個小節。推導過程不必逐行抄寫，但推導中用到的假設與近似條件要寫出（這類內容常以是非題出現）。</li>
-<li><strong>著作權</strong>：說明文字一律自行重寫，不逐字抄錄課本或投影片；例題保留題意但數值需重新計算。課本、投影片 PDF <strong>不得</strong>放入 repository。</li>
-<li><strong>數值</strong>：所有例題與練習的數值都要實際計算並寫出中間步驟；有效位數 2–3 位。常數使用該課程附錄常數表的值（例如電子學 n<sub>i</sub> = 1.08 × 10<sup>10</sup> cm<sup>−3</sup>）。</li>
-<li><strong>延伸內容</strong>：教材以外、為輔助理解而加入的內容，<code>.tag</code> 以「補充」開頭。</li>
-<li><strong>練習題型</strong>：計算題附逐步解；是非題答案以「○／✗。理由」開頭；填空題以「___」表示空格。</li>
+<li><strong>語言</strong>：繁體中文。專有名詞首次出現寫成「中文（English）」，之後只用中文，並列入名詞對照表。來源本身是英文時，保留英文原名於括號內。</li>
+<li><strong>語氣</strong>：客觀、精確，接近教科書。不用誇飾詞、口語語尾、延伸的生活化比喻、教練式人稱。</li>
+<li><strong>完整、照原序</strong>：依來源順序撰寫，每個定義、結論、例題、圖表都要落入某個小節。推導或論證不必逐行重抄，但其中使用的假設、近似條件與前提要寫出。</li>
+<li><strong>著作權</strong>：說明文字自行重寫，不逐字抄錄來源；需要引用原文時只引短句並標出處。來源檔案（PDF、簡報）不放入 repository。</li>
+<li><strong>數值與事實</strong>：例題數值重新計算並寫出步驟；論文的實驗數字照原文引用並標明表格／圖號；不確定的內容標「（待確認）」，不自行補造。</li>
+<li><strong>延伸內容</strong>：來源以外、為輔助理解而加入的內容，<code>.tag</code> 以「補充」開頭。</li>
+<li><strong>題型</strong>：計算題附逐步解；是非題以「○／✗。理由」開頭；填空題以「___」表示空格；申論或理解題附擬答要點。</li>
 </ol>
 <hr />
 <h2 id="7">§7 圖與互動</h2>
 <ul>
-<li><code>.md</code> 只放佔位 <code>&lt;svg id="…"&gt;&lt;/svg&gt;</code>，繪圖程式全部寫在 <code>figs/chNN.js</code>。章節檔中不得出現 <code>&lt;script&gt;</code>／<code>&lt;style&gt;</code>（R4）。</li>
-<li>每個 <code>&lt;svg id&gt;</code> 都必須在 <code>figs/chNN.js</code> 中被引用（R9），例如 <code>$('#f-ideal')</code>。</li>
-<li>載入順序（模板固定）：<code>core.js</code> → 課程 <code>lib.js</code> → <code>figs/chNN.js</code> → <code>theme.js</code>。各檔以一般 <code>&lt;script&gt;</code> 載入、共用全域範圍，因此 <code>figs/chNN.js</code> 的頂層程式一律包在 IIFE <code>(function(){ … })();</code> 內，避免名稱衝突。</li>
-<li>顏色只用 CSS 變數對應的 class（<code>ln-fg</code>、<code>ln-e</code>、<code>ln-h</code>、<code>ln-acc</code>、<code>ln-mu</code>、<code>t-acc</code>、<code>mu</code>…），不得寫死色碼，深色模式才會正確。</li>
-<li><code>core.js</code> 提供的介面：</li>
+<li>圖只在能幫助理解時加入：結構示意、函數或資料曲線、流程、可調參數的互動實驗。純文字能說清楚的內容不加圖。</li>
+<li><code>.md</code> 只放佔位 <code>&lt;svg id="…"&gt;&lt;/svg&gt;</code>，繪圖程式寫在 <code>figs/chNN.js</code>；單元檔不放 <code>&lt;script&gt;</code>、<code>&lt;style&gt;</code>。</li>
+<li>載入順序：<code>core.js</code> → 主題 <code>lib.js</code> → <code>figs/chNN.js</code> → <code>theme.js</code>。共用全域範圍，<code>figs/chNN.js</code> 的程式包在 IIFE <code>(function(){ … })();</code> 內。</li>
+<li>顏色只用對應 CSS 變數的 class（<code>ln-fg</code>、<code>ln-e</code>、<code>ln-acc</code>、<code>ln-mu</code>、<code>t-acc</code>、<code>mu</code>…），深色模式才會正確。</li>
+<li><code>core.js</code>（全主題共用）：</li>
 </ul>
 <table>
 <thead>
@@ -340,15 +417,15 @@ updated: 2026-11-13
 </tr>
 <tr>
 <td><code>T(p, x, y, text, attrs)</code></td>
-<td>文字；<code>V_{D}</code>、<code>10^{3}</code> 會轉成下標／上標</td>
+<td>文字；<code>x_{i}</code>、<code>10^{3}</code> 轉成下標／上標</td>
 </tr>
 <tr>
 <td><code>L(p, x1, y1, x2, y2, cls, markerEnd, markerStart)</code></td>
-<td>線段；marker 用 <code>a-fg</code>、<code>a-acc</code> 等（定義於 <code>templates/_markers.svg</code>）</td>
+<td>線段；箭頭 marker 用 <code>a-fg</code>、<code>a-acc</code> 等</td>
 </tr>
 <tr>
 <td><code>plot(svg, {w,h,x:[min,max],y:[min,max],xlabel,ylabel,xlog,ylog,m})</code></td>
-<td>建立座標圖，回傳物件 <code>P</code>：<code>P.fn(f,cls)</code> 函數曲線、<code>P.path(pts,cls)</code> 折線、<code>P.poly(pts,cls)</code> 填色區、<code>P.rect(x0,x1,cls)</code> 垂直帶、<code>P.dot(x,y)</code>、<code>P.label(x,y,text,attrs)</code>、<code>P.hline(y)</code>／<code>P.vline(x)</code> 參考線、<code>P.sx()</code>／<code>P.sy()</code>（資料座標→像素）</td>
+<td>座標圖，回傳 <code>P</code>：<code>P.fn(f,cls)</code>、<code>P.path(pts,cls)</code>、<code>P.poly(pts,cls)</code>、<code>P.rect(x0,x1,cls)</code>、<code>P.dot(x,y)</code>、<code>P.label(x,y,text,attrs)</code>、<code>P.hline(y)</code>、<code>P.vline(x)</code>、<code>P.sx()</code>／<code>P.sy()</code></td>
 </tr>
 <tr>
 <td><code>sci(x)</code>、<code>fnum(v)</code>、<code>nice()</code>、<code>decades()</code></td>
@@ -357,95 +434,46 @@ updated: 2026-11-13
 </tbody>
 </table>
 <ul>
-<li>電子學 <code>lib.js</code> 另提供電路原語：<code>W(svg,pathD)</code> 導線、<code>dio/res/cap/bat(svg,x1,y1,x2,y2)</code> 兩端元件、<code>src(svg,x,y,'ac'|'dc')</code> 電源、<code>opamp(svg,x,y,plusTop)</code> 運算放大器（回傳 <code>{p,n,o}</code> 接腳座標）、<code>gnd</code>、<code>nd</code> 節點、<code>lb</code> 標籤、<code>segInit(id,cb)</code> 分段按鈕、<code>bisect(f,a,b)</code> 非線性求解，以及常數 <code>q, kB, VT, ni0, epsSi, IS, VON</code>。</li>
-<li>互動圖：控制項（<code>input[type=range]</code>、<code>.seg</code> 按鈕）放在 <code>&lt;figure&gt;</code> 內的 <code>.ctrl</code>；數值輸出用 <code>&lt;output id="…o"&gt;</code>；更新函式命名 <code>drawXxx()</code>，在 <code>input</code> 事件與初次載入時各呼叫一次。</li>
+<li>主題專用函式放在 <code>content/&lt;topic&gt;/lib.js</code>。範例：電子學的 <code>lib.js</code> 提供 <code>W</code> 導線、<code>res/cap/dio/bat</code> 兩端元件、<code>src</code> 電源、<code>opamp</code> 運算放大器、<code>gnd</code>、<code>nd</code>、<code>lb</code>、<code>segInit</code>、<code>bisect</code> 與物理常數。</li>
+<li>共用函式只新增、不改既有參數與行為，因為所有單元都依賴它們。</li>
 </ul>
 <hr />
-<h2 id="8-toolscheckpy">§8 驗收清單（<code>tools/check.py</code> 自動檢查）</h2>
-<table>
-<thead>
-<tr>
-<th>編號</th>
-<th>規則</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>R1</td>
-<td><code>course.json</code> 欄位齊全；<code>slug</code> 等於資料夾名；章號遞增不重複</td>
-</tr>
-<tr>
-<td>R2</td>
-<td>章節檔名為 <code>chNN-&lt;slug&gt;.md</code>，且章號、slug 與 <code>course.json</code> 一致</td>
-</tr>
-<tr>
-<td>R3</td>
-<td>frontmatter 含 <code>chapter</code>（與檔名一致）、<code>summary</code>、<code>updated</code>（YYYY-MM-DD）</td>
-</tr>
-<tr>
-<td>R4</td>
-<td>章節檔不含 <code>&lt;script&gt;</code>、<code>&lt;style&gt;</code>、h1</td>
-</tr>
-<tr>
-<td>R5</td>
-<td>骨架：<code>0 本章導覽</code>（含 <code>.goal</code>）→ 3–8 個遞增編號小節 → <code>附錄</code></td>
-</tr>
-<tr>
-<td>R6</td>
-<td>每個編號小節至少一個 <code>.box.ex</code> 或 <code>.practice</code></td>
-</tr>
-<tr>
-<td>R7</td>
-<td>附錄含公式、陷阱、自我測驗（≥ 5 題）、名詞對照（「中文、English」兩欄的 Markdown 表格）</td>
-</tr>
-<tr>
-<td>R8</td>
-<td>只使用 §5 白名單內的 class</td>
-</tr>
-<tr>
-<td>R9</td>
-<td>每個 <code>&lt;svg id&gt;</code> 都在 <code>figs/chNN.js</code> 中被繪製；圖檔必須對應已存在的章節</td>
-</tr>
-<tr>
-<td>R10</td>
-<td>頁內錨點 <code>href="#…"</code> 都指向存在的 id</td>
-</tr>
-<tr>
-<td>R11</td>
-<td>不得殘留 <code>templates/chapter.md</code> 的佔位文字（如「第一個大主題」「題目敘述」「f-example」）</td>
-</tr>
-</tbody>
-</table>
-<p>無法自動檢查、需人工（或 AI 自我）確認的項目：</p>
+<h2 id="8">§8 完成前自我檢查</h2>
+<p>撰寫者（人或 AI）在回報完成前逐項確認：</p>
 <ul>
-<li>[ ] 教材每一頁的概念都已涵蓋（§6-3）</li>
-<li>[ ] 說明為自行重寫、數值已重新計算（§6-4、§6-5）</li>
-<li>[ ] 瀏覽器中所有圖都有畫出，console 無錯誤</li>
-<li>[ ] 深色模式與 360 px 寬度下可正常閱讀</li>
+<li>[ ] <code>course.json</code> 已登錄本單元，檔名、序號、slug 一致</li>
+<li>[ ] frontmatter 有 <code>chapter</code>、<code>summary</code>、<code>updated</code></li>
+<li>[ ] 骨架為「0 本章導覽（含 <code>.goal</code>）→ 編號小節 → 附錄」</li>
+<li>[ ] 每個編號小節至少一個例題或練習；附錄自我測驗至少 5 題</li>
+<li>[ ] 附錄有重點總表、常見誤解、自我測驗、名詞對照表</li>
+<li>[ ] 來源每一頁的內容都已落入某個小節</li>
+<li>[ ] 說明為自行重寫；數值已重新計算或已標明原文出處</li>
+<li>[ ] 範本的佔位文字已全部替換</li>
+<li>[ ] <code>python tools/build.py</code> 成功；瀏覽器中所有圖都有畫出、console 無錯誤</li>
+<li>[ ] 深色模式與手機寬度下可正常閱讀</li>
 </ul>
 <hr />
 <h2 id="9-ai">§9 AI 修改時的規則</h2>
 <p><strong>必須：</strong></p>
 <ul>
-<li>開始前讀本文件與 <code>templates/chapter.md</code>；新增章節時至少再讀一份既有章節（如 <code>content/electronics/ch03-diode-models.md</code>）作為範例。</li>
-<li>每次修改內容後執行 <code>python tools/build.py</code>，並在回報中附上 check 結果（error/warning 數）。</li>
-<li>遇到規則未涵蓋的情況，先擴充本文件（§5 元件、§8 規則）再實作，使規則與網站保持一致。</li>
+<li>開始前讀本文件與 <code>templates/chapter.md</code>；新增單元時讀一個既有單元的一個小節與附錄作為格式範例。</li>
+<li>修改內容後執行 <code>python tools/build.py</code>，並在瀏覽器確認受影響的頁面。</li>
+<li>規則未涵蓋的情況（新的來源類型、新的元件），先補充本文件，再實作。</li>
 </ul>
 <p><strong>禁止：</strong></p>
 <ul>
-<li>手動修改 <code>docs/</code> 下任何檔案（下次 build 會被覆蓋）。</li>
-<li>為了通過 <code>check.py</code> 而刪除內容、放寬規則或加入空殼元件；檢查失敗時修正內容本身。</li>
-<li>在章節檔加入內嵌 <code>&lt;script&gt;</code>／<code>&lt;style&gt;</code>、外部 CDN、追蹤碼或前端框架。</li>
-<li>更改 <code>core.js</code>、<code>lib.js</code> 既有函式的參數順序或行為（所有章節共用；只能新增函式）。</li>
-<li>把課本或投影片原文、PDF 放進 repository。</li>
+<li>手動修改 <code>docs/</code>（下次 build 會被覆蓋）。</li>
+<li>為了湊滿格式而加入空洞內容；來源沒有的資訊不自行編造。</li>
+<li>在單元檔加入 <code>&lt;script&gt;</code>／<code>&lt;style&gt;</code>、外部 CDN、追蹤碼或前端框架。</li>
+<li>更改 <code>core.js</code>、各主題 <code>lib.js</code> 既有函式的參數或行為。</li>
+<li>把來源原文整段複製或把來源檔案放進 repository。</li>
 </ul>
 <hr />
 <h2 id="10">§10 常用指令</h2>
-<pre><code class="language-bash">pip install markdown                        # 唯一的外部相依套件
-python tools/new_chapter.py electronics 8   # 依 course.json 建立第 8 章檔案
-python tools/check.py                       # 只做規則檢查
-python tools/build.py                       # 檢查 + 產生 docs/
-python -m http.server -d docs 8000          # 本機預覽 http://localhost:8000
+<pre><code class="language-bash">pip install markdown                          # 唯一的外部相依套件
+python tools/new_chapter.py electronics 8     # 依 course.json 建立單元檔案
+python tools/build.py                         # 產生 docs/
+python -m http.server -d docs 8000            # 本機預覽 http://localhost:8000
 </code></pre>
 <p>發布：<code>docs/</code> 隨 <code>main</code> 分支推上 GitHub，GitHub Pages 設定為 <em>Deploy from a branch → main → /docs</em>。</p>
 </div>
