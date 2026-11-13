@@ -2,7 +2,7 @@
 
 以一套固定規則持續產出課程講義網頁的專案。每一章是一個 Markdown 檔，`tools/build.py` 先依規則檢查，再產生 GitHub Pages 網站。
 
-- **網站**：見 repository 右側 About 的連結（GitHub Pages，`docs/`）
+- **網站**：https://nelson0314.github.io/ee-study-notes/
 - **規則**：[`AGENTS.md`](AGENTS.md)（唯一規則來源）、[`CLAUDE.md`](CLAUDE.md)（Claude Code 入口，匯入 AGENTS.md）
 - **新增一章的工作流程**：[`.claude/skills/add-chapter/SKILL.md`](.claude/skills/add-chapter/SKILL.md)
 
