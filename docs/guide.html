@@ -357,7 +357,7 @@ updated: 2026-11-13
 </tbody>
 </table>
 <ul>
-<li>電子學 <code>lib.js</code> 另提供電路原語：<code>W(svg,pathD)</code> 導線、<code>dio/res/cap/bat(svg,x1,y1,x2,y2)</code> 兩端元件、<code>src(svg,x,y,'ac'|'dc')</code> 電源、<code>gnd</code>、<code>nd</code> 節點、<code>lb</code> 標籤、<code>segInit(id,cb)</code> 分段按鈕、<code>bisect(f,a,b)</code> 非線性求解，以及常數 <code>q, kB, VT, ni0, epsSi, IS, VON</code>。</li>
+<li>電子學 <code>lib.js</code> 另提供電路原語：<code>W(svg,pathD)</code> 導線、<code>dio/res/cap/bat(svg,x1,y1,x2,y2)</code> 兩端元件、<code>src(svg,x,y,'ac'|'dc')</code> 電源、<code>opamp(svg,x,y,plusTop)</code> 運算放大器（回傳 <code>{p,n,o}</code> 接腳座標）、<code>gnd</code>、<code>nd</code> 節點、<code>lb</code> 標籤、<code>segInit(id,cb)</code> 分段按鈕、<code>bisect(f,a,b)</code> 非線性求解，以及常數 <code>q, kB, VT, ni0, epsSi, IS, VON</code>。</li>
 <li>互動圖：控制項（<code>input[type=range]</code>、<code>.seg</code> 按鈕）放在 <code>&lt;figure&gt;</code> 內的 <code>.ctrl</code>；數值輸出用 <code>&lt;output id="…o"&gt;</code>；更新函式命名 <code>drawXxx()</code>，在 <code>input</code> 事件與初次載入時各呼叫一次。</li>
 </ul>
 <hr />

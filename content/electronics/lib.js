@@ -24,3 +24,8 @@ const IS=2e-16,VON=0.8;
 /* solve f(x)=0 by bisection (f increasing) */
 function bisect(f,a,b){for(let i=0;i<80;i++){const m=(a+b)/2;if(f(m)>0)b=m;else a=m;}return(a+b)/2;}
 
+
+/* op amp 符號：左緣 x、中心 y；plusTop=true 時 + 端在上。回傳接腳座標 {p:+端, n:−端, o:輸出}。 */
+function opamp(s,x,y,plusTop){E('polygon',{points:`${x},${y-40} ${x},${y+40} ${x+70},${y}`,class:'ln-fg'},s);
+  T(s,x+8,y-15,plusTop?'+':'−',{'font-size':15});T(s,x+8,y+27,plusTop?'−':'+',{'font-size':15});
+  return plusTop?{p:[x,y-20],n:[x,y+20],o:[x+70,y]}:{p:[x,y+20],n:[x,y-20],o:[x+70,y]};}

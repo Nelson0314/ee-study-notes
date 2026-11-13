@@ -224,7 +224,7 @@ updated: 2026-11-13
 | `plot(svg, {w,h,x:[min,max],y:[min,max],xlabel,ylabel,xlog,ylog,m})` | 建立座標圖，回傳物件 `P`：`P.fn(f,cls)` 函數曲線、`P.path(pts,cls)` 折線、`P.poly(pts,cls)` 填色區、`P.rect(x0,x1,cls)` 垂直帶、`P.dot(x,y)`、`P.label(x,y,text,attrs)`、`P.hline(y)`／`P.vline(x)` 參考線、`P.sx()`／`P.sy()`（資料座標→像素） |
 | `sci(x)`、`fnum(v)`、`nice()`、`decades()` | 數值格式化與刻度 |
 
-- 電子學 `lib.js` 另提供電路原語：`W(svg,pathD)` 導線、`dio/res/cap/bat(svg,x1,y1,x2,y2)` 兩端元件、`src(svg,x,y,'ac'|'dc')` 電源、`gnd`、`nd` 節點、`lb` 標籤、`segInit(id,cb)` 分段按鈕、`bisect(f,a,b)` 非線性求解，以及常數 `q, kB, VT, ni0, epsSi, IS, VON`。
+- 電子學 `lib.js` 另提供電路原語：`W(svg,pathD)` 導線、`dio/res/cap/bat(svg,x1,y1,x2,y2)` 兩端元件、`src(svg,x,y,'ac'|'dc')` 電源、`opamp(svg,x,y,plusTop)` 運算放大器（回傳 `{p,n,o}` 接腳座標）、`gnd`、`nd` 節點、`lb` 標籤、`segInit(id,cb)` 分段按鈕、`bisect(f,a,b)` 非線性求解，以及常數 `q, kB, VT, ni0, epsSi, IS, VON`。
 - 互動圖：控制項（`input[type=range]`、`.seg` 按鈕）放在 `<figure>` 內的 `.ctrl`；數值輸出用 `<output id="…o">`；更新函式命名 `drawXxx()`，在 `input` 事件與初次載入時各呼叫一次。
 
 ---

@@ -1,0 +1,491 @@
+---
+chapter: 8
+summary: 把運算放大器視為高增益差動放大的黑盒子，分析反相／非反相放大器、積分與微分器、加減法與精密整流電路，以及偏移、偏壓電流、頻寬與迴轉率等非理想效應。
+updated: 2026-11-13
+---
+
+## 0 本章導覽
+
+前面各章處理單一元件（二極體）的模型與電路。本章暫時不管運算放大器（operational amplifier, op amp）的內部電晶體結構，只用「輸入阻抗、輸出阻抗、增益、頻寬」幾個外部參數描述它，再以這個黑盒子模型分析常見的回授電路。核心問題有兩個：理想 op amp 下電路的閉迴路增益是多少；op amp 的有限增益、偏移、頻寬與迴轉率使結果偏離理想值多少。
+
+<div class="flow">
+  <div class="stage"><h4>① 模型（8.1）</h4><ul><li>差動增益 A<sub>0</sub></li><li>理想 op amp 條件</li><li>虛短路</li></ul></div>
+  <div class="arr">➜</div>
+  <div class="stage"><h4>② 線性電路（8.2–8.4）</h4><ul><li>非反相／反相放大器</li><li>積分器、微分器</li><li>差動、儀表、加法放大器</li></ul></div>
+  <div class="arr">➜</div>
+  <div class="stage"><h4>③ 非理想效應（8.5–8.6）</h4><ul><li>偏移電壓、輸入偏壓電流</li><li>頻寬、迴轉率</li><li>輸出電阻、CMRR、PSRR</li></ul></div>
+</div>
+
+<div class="goal"><b>讀完本章應能：</b>
+<ul>
+  <li>以虛短路與「輸入端無電流」兩個條件，求出反相、非反相、積分、微分、加法與差動電路的輸出</li>
+  <li>計算有限開迴路增益 A<sub>0</sub> 造成的閉迴路增益誤差</li>
+  <li>說明精密整流器如何消除二極體導通電壓的影響</li>
+  <li>估算偏移電壓與輸入偏壓電流在放大器、積分器輸出端造成的誤差，並設計抵銷電阻</li>
+  <li>由增益頻寬積計算閉迴路頻寬，由迴轉率計算全功率頻寬</li>
+</ul></div>
+
+## 8.1 運算放大器的基本模型
+
+### 1　差動放大與增益
+
+運算放大器有兩個輸入端、一個輸出端，放大的是兩輸入端的**電壓差**。以非反相輸入（noninverting input，標「+」）電壓 V<sub>in1</sub>、反相輸入（inverting input，標「−」）電壓 V<sub>in2</sub> 表示：
+
+<div class="eq key"><i>V</i><sub>out</sub> = <i>A</i><sub>0</sub>(<i>V</i><sub>in1</sub> − <i>V</i><sub>in2</sub>)</div>
+
+A<sub>0</sub> 稱為開迴路增益（open-loop gain），一般為 10<sup>3</sup>～10<sup>6</sup>。增益常以分貝表示：|A|<sub>dB</sub> = 20 log|A|。兩輸入端電壓的差值稱為差模（differential mode）信號，兩者的平均值稱為共模（common mode）信號；理想 op amp 只放大差模信號。
+
+<figure class="fig"><svg id="f-opsym" class="md"></svg>
+  <figcaption>op amp 符號與黑盒子模型。輸入端不取電流，輸出端等效為受控電壓源 A<sub>0</sub>(V<sub>in1</sub> − V<sub>in2</sub>)。電源端（V<sub>DD</sub>、V<sub>SS</sub>）通常省略不畫。</figcaption></figure>
+
+把其中一個輸入端接地，即可得到兩種極性的放大：反相端接地時 V<sub>out</sub> = A<sub>0</sub>V<sub>in1</sub>，增益為正；非反相端接地時 V<sub>out</sub> = −A<sub>0</sub>V<sub>in2</sub>，增益為負。
+
+### 2　四種放大器型態
+
+依輸入、輸出量是電壓或電流，放大器分成四類。理想的輸入／輸出阻抗由「不影響前級、不受負載影響」決定：量電壓的輸入端要高阻抗，量電流的輸入端要低阻抗；輸出電壓的一端要低阻抗，輸出電流的一端要高阻抗。
+
+<div class="tbl"><table>
+  <tr><th>型態</th><th>增益單位</th><th>理想輸入阻抗</th><th>理想輸出阻抗</th><th>典型實例</th></tr>
+  <tr><td>電壓放大器（V/V）</td><td>V/V</td><td>大</td><td>小</td><td>運算放大器</td></tr>
+  <tr><td>轉導放大器（transconductance, V/I）</td><td>A/V</td><td>大</td><td>大</td><td>單一電晶體</td></tr>
+  <tr><td>電流放大器（I/I）</td><td>A/A</td><td>小</td><td>大</td><td>電流鏡</td></tr>
+  <tr><td>轉阻放大器（transimpedance, I/V）</td><td>V/A</td><td>小</td><td>小</td><td>光二極體接收電路</td></tr>
+</table></div>
+
+### 3　理想 op amp 與直流設計指標
+
+理想 op amp 具備：輸入阻抗無窮大、輸出阻抗為零、增益與頻寬無窮大，且功耗低。實際設計時另有幾項直流指標：
+
+- **輸入共模範圍**（input common-mode range）：輸入共模電壓在此範圍內，內部電晶體都維持在放大所需的工作區。
+- **輸出擺幅**（output swing）：輸出電壓能到達、且增益不明顯下降的範圍。
+- **直流偏移電壓**（DC offset voltage）：輸入差為零時輸出仍不為零；等效為一個串在輸入端的小電壓源，8.5 節討論。
+
+### 4　虛短路
+
+把輸出直接接回反相端（V<sub>in2</sub> = V<sub>out</sub>），由 V<sub>out</sub> = A<sub>0</sub>(V<sub>in</sub> − V<sub>out</sub>) 得
+
+<div class="eq"><i>V</i><sub>out</sub>/<i>V</i><sub>in</sub> = <span class="frac"><span><i>A</i><sub>0</sub></span><span>1 + <i>A</i><sub>0</sub></span></span></div>
+
+A<sub>0</sub> → ∞ 時 V<sub>out</sub> → V<sub>in</sub>，兩輸入端電壓相等但兩端之間沒有電流流過，稱為虛短路（virtual short）。虛短路只在**負回授**存在、且 op amp 未飽和時成立。這個電路的閉迴路增益（closed-loop gain）為 1，稱為電壓隨耦器（voltage follower）或單位增益緩衝器（unity-gain buffer）。
+
+<div class="box note"><span class="tag">觀念說明：分析 op amp 電路的兩條規則</span><br>
+理想 op amp 加上負回授時，分析只需要兩個條件：
+<ol>
+  <li><b>虛短路</b>：V<sub>+</sub> = V<sub>−</sub>（因 A<sub>0</sub> 無窮大，有限輸出對應的輸入差為零）。</li>
+  <li><b>輸入端無電流</b>：流入 + 端與 − 端的電流皆為零（因輸入阻抗無窮大）。</li>
+</ol>
+其餘部分以 KCL 在反相輸入節點列方程式即可。</div>
+
+<div class="box ex"><span class="tag">例題 8.1</span><br>
+電壓隨耦器使用 A<sub>0</sub> = 500 的 op amp，求閉迴路增益與相對誤差。
+<ul>
+  <li>V<sub>out</sub>/V<sub>in</sub> = 500/501 ≈ 0.998。</li>
+  <li>相對誤差 = 1 − 0.998 = 1/501 ≈ 0.2%。A<sub>0</sub> 越大，隨耦器越接近理想。</li>
+</ul></div>
+
+<div class="practice"><span class="tag">練習 8.1</span>
+<details class="q"><summary>（計算）op amp 的開迴路增益為 100 dB，換算成 V/V 是多少？</summary>
+<ol class="sol"><li>20 log A<sub>0</sub> = 100 → log A<sub>0</sub> = 5。</li><li>A<sub>0</sub> = 10<sup>5</sup> V/V。</li></ol></details>
+<details class="q"><summary>（是非）只要 op amp 的增益很大，任何接法下兩輸入端電壓都會相等。</summary>
+<ol class="sol"><li>✗。虛短路需要負回授把輸出拉回反相端；開迴路或正回授時輸出會飽和，兩輸入端電壓可以相差很大（例如比較器）。</li></ol></details>
+</div>
+
+## 8.2 非反相與反相放大器
+
+### 1　非反相放大器
+
+非反相放大器（noninverting amplifier）把輸出經分壓器 R<sub>1</sub>、R<sub>2</sub> 送回反相端，輸入加在非反相端。反相端電壓為 V<sub>out</sub>R<sub>2</sub>/(R<sub>1</sub> + R<sub>2</sub>)，由虛短路令其等於 V<sub>in</sub>：
+
+<div class="eq key"><i>V</i><sub>out</sub>/<i>V</i><sub>in</sub> = 1 + <i>R</i><sub>1</sub>/<i>R</i><sub>2</sub></div>
+
+增益只由電阻**比值**決定。積體電路中電阻的絕對值誤差可達 ±20%，比值誤差卻可小於 0.1%，因此回授放大器的增益可以很精確。
+
+<div class="grid2">
+  <figure class="fig"><svg id="f-ninv" class="md"></svg>
+    <figcaption>非反相放大器。R<sub>1</sub> 接在輸出與反相端之間，R<sub>2</sub> 接在反相端與地之間。</figcaption></figure>
+  <figure class="fig"><svg id="f-inv" class="md"></svg>
+    <figcaption>反相放大器。輸入經 R<sub>2</sub> 進入反相端，R<sub>1</sub> 為回授電阻；非反相端接地，反相端成為虛接地。</figcaption></figure>
+</div>
+
+兩個極端情形：R<sub>2</sub> = 0 時（反相端接地）回授消失，增益等於 op amp 本身的 A<sub>0</sub>；R<sub>2</sub> = ∞（或 R<sub>1</sub> = 0）時電路變成電壓隨耦器，增益為 1。
+
+### 2　有限 A<sub>0</sub> 造成的增益誤差
+
+保留 A<sub>0</sub>：(V<sub>in</sub> − V<sub>out</sub>R<sub>2</sub>/(R<sub>1</sub> + R<sub>2</sub>))A<sub>0</sub> = V<sub>out</sub>，整理得
+
+<div class="eq"><span class="frac"><span><i>V</i><sub>out</sub></span><span><i>V</i><sub>in</sub></span></span> = <span class="frac"><span>1</span><span><span class="frac"><span><i>R</i><sub>2</sub></span><span><i>R</i><sub>1</sub> + <i>R</i><sub>2</sub></span></span> + <span class="frac"><span>1</span><span><i>A</i><sub>0</sub></span></span></span></span> ≈ (1 + <span class="frac"><span><i>R</i><sub>1</sub></span><span><i>R</i><sub>2</sub></span></span>)[1 − (1 + <span class="frac"><span><i>R</i><sub>1</sub></span><span><i>R</i><sub>2</sub></span></span>)<span class="frac"><span>1</span><span><i>A</i><sub>0</sub></span></span>]</div>
+
+近似式成立於 (1 + R<sub>1</sub>/R<sub>2</sub>) ≪ A<sub>0</sub>。相對增益誤差約為 (1 + R<sub>1</sub>/R<sub>2</sub>)/A<sub>0</sub>：**閉迴路增益越大，誤差越大**。要做高增益又要精確，op amp 的 A<sub>0</sub> 必須更大。
+
+<figure class="fig">
+  <div class="ctrl">
+    <label>A<sub>0</sub> = 10^ <input type="range" id="geA" min="2" max="6" step="0.1" value="4"></label><output id="geAo"></output>
+  </div>
+  <div class="readout" id="geR"></div>
+  <svg id="f-gerr"></svg>
+  <figcaption>非反相放大器的相對增益誤差與理想閉迴路增益 G = 1 + R<sub>1</sub>/R<sub>2</sub> 的關係（雙對數座標）。灰線為 A<sub>0</sub> = 10<sup>3</sup>、10<sup>4</sup>、10<sup>5</sup>，藍線隨滑桿改變。誤差約與 G/A<sub>0</sub> 成正比，在對數座標上為斜率 1 的直線。</figcaption>
+</figure>
+
+<div class="box ex"><span class="tag">例題 8.2</span><br>
+非反相放大器 R<sub>1</sub> = 9 kΩ、R<sub>2</sub> = 1 kΩ。分別求 A<sub>0</sub> = 1000 與 10<sup>4</sup> 時的實際增益與誤差。
+<ul>
+  <li>理想增益 1 + 9 = 10；R<sub>2</sub>/(R<sub>1</sub> + R<sub>2</sub>) = 0.1。</li>
+  <li>A<sub>0</sub> = 1000：1/(0.1 + 0.001) ≈ 9.901，誤差 ≈ 0.99%。</li>
+  <li>A<sub>0</sub> = 10<sup>4</sup>：1/(0.1 + 0.0001) ≈ 9.990，誤差 ≈ 0.10%。A<sub>0</sub> 增加 10 倍，誤差降為 1/10。</li>
+</ul></div>
+
+### 3　反相放大器
+
+反相放大器（inverting amplifier）的非反相端接地，虛短路使反相端成為虛接地（virtual ground）。流過 R<sub>2</sub> 的電流 V<sub>in</sub>/R<sub>2</sub> 全部流經 R<sub>1</sub>：
+
+<div class="eq key"><i>V</i><sub>out</sub>/<i>V</i><sub>in</sub> = −<i>R</i><sub>1</sub>/<i>R</i><sub>2</sub></div>
+
+輸入阻抗為 V<sub>in</sub>/I<sub>in</sub> = R<sub>2</sub>，這是反相放大器與非反相放大器（輸入阻抗趨近無窮大）的主要差別。保留 A<sub>0</sub> 時，反相端電壓 V<sub>X</sub> = −V<sub>out</sub>/A<sub>0</sub>，在該節點列 KCL 得
+
+<div class="eq"><span class="frac"><span><i>V</i><sub>out</sub></span><span><i>V</i><sub>in</sub></span></span> = −<span class="frac"><span><i>R</i><sub>1</sub>/<i>R</i><sub>2</sub></span><span>1 + (1 + <i>R</i><sub>1</sub>/<i>R</i><sub>2</sub>)/<i>A</i><sub>0</sub></span></span></div>
+
+相對誤差同樣約為 (1 + R<sub>1</sub>/R<sub>2</sub>)/A<sub>0</sub>。
+
+### 4　一般阻抗與 T 型回授網路
+
+R<sub>1</sub>、R<sub>2</sub> 換成一般阻抗 Z<sub>1</sub>、Z<sub>2</sub> 時推導不變：反相組態 V<sub>out</sub>/V<sub>in</sub> = −Z<sub>1</sub>/Z<sub>2</sub>，非反相組態 V<sub>out</sub>/V<sub>in</sub> = 1 + Z<sub>1</sub>/Z<sub>2</sub>。8.3 節的積分器與微分器即為此形式的特例。
+
+<div class="box ex"><span class="tag">例題 8.3（T 型回授網路）</span><br>
+反相放大器的回授路徑改為 T 型網路：輸入電阻 R<sub>1</sub> 接到反相端，反相端經 R<sub>2</sub> 到節點 X，X 經 R<sub>3</sub> 接地、經 R<sub>4</sub> 接到輸出。求 V<sub>out</sub>/V<sub>in</sub>，並代入 R<sub>1</sub> = 10 kΩ、R<sub>2</sub> = R<sub>4</sub> = 100 kΩ、R<sub>3</sub> = 1 kΩ。
+<ul>
+  <li>反相端為虛接地，R<sub>1</sub> 與 R<sub>2</sub> 電流相同：V<sub>X</sub> = −(R<sub>2</sub>/R<sub>1</sub>)V<sub>in</sub>。</li>
+  <li>節點 X 的 KCL：(0 − V<sub>X</sub>)/R<sub>2</sub> + (0 − V<sub>X</sub>)/R<sub>3</sub> = (V<sub>X</sub> − V<sub>out</sub>)/R<sub>4</sub>，得 V<sub>out</sub> = V<sub>X</sub>(1 + R<sub>4</sub>/R<sub>2</sub> + R<sub>4</sub>/R<sub>3</sub>)。</li>
+  <li>V<sub>out</sub>/V<sub>in</sub> = −(R<sub>2</sub>/R<sub>1</sub>)(1 + R<sub>4</sub>/R<sub>2</sub> + R<sub>4</sub>/R<sub>3</sub>) = −10 × (1 + 1 + 100) = −1020。</li>
+  <li>用單純反相放大器得到 −1020 需要 10.2 MΩ 的回授電阻；T 型網路只用到 100 kΩ，同時保持 10 kΩ 的輸入阻抗。</li>
+</ul></div>
+
+<div class="practice"><span class="tag">練習 8.2</span>
+<details class="q"><summary>（計算）反相放大器 R<sub>2</sub> = 1 kΩ、R<sub>1</sub> = 10 kΩ、A<sub>0</sub> = 2000，求實際增益、相對誤差與輸入阻抗。</summary>
+<ol class="sol"><li>理想增益 −10；1 + R<sub>1</sub>/R<sub>2</sub> = 11。</li><li>V<sub>out</sub>/V<sub>in</sub> = −10/(1 + 11/2000) = −10/1.0055 ≈ −9.945，誤差 ≈ 0.55%。</li><li>輸入阻抗 = R<sub>2</sub> = 1 kΩ。</li></ol></details>
+<details class="q"><summary>（設計）以 1.2 V 參考電壓與非反相放大器產生 3.3 V 輸出，R<sub>1</sub>/R<sub>2</sub> 應為多少？</summary>
+<ol class="sol"><li>1 + R<sub>1</sub>/R<sub>2</sub> = 3.3/1.2 = 2.75。</li><li>R<sub>1</sub>/R<sub>2</sub> = 1.75，例如 R<sub>1</sub> = 17.5 kΩ、R<sub>2</sub> = 10 kΩ。</li></ol></details>
+</div>
+
+## 8.3 積分器與微分器
+
+### 1　積分器
+
+反相放大器的回授電阻換成電容 C<sub>1</sub>，Z<sub>1</sub> = 1/(C<sub>1</sub>s)、Z<sub>2</sub> = R<sub>1</sub>：
+
+<div class="eq key"><span class="frac"><span><i>V</i><sub>out</sub></span><span><i>V</i><sub>in</sub></span></span> = −<span class="frac"><span>1</span><span><i>R</i><sub>1</sub><i>C</i><sub>1</sub><i>s</i></span></span>　⟺　<i>V</i><sub>out</sub> = −<span class="frac"><span>1</span><span><i>R</i><sub>1</sub><i>C</i><sub>1</sub></span></span>∫<i>V</i><sub>in</sub> d<i>t</i></div>
+
+時域推導：虛接地使 R<sub>1</sub> 電流為 V<sub>in</sub>/R<sub>1</sub>，此電流全部流入 C<sub>1</sub>，因此 C<sub>1</sub>dV<sub>out</sub>/dt = −V<sub>in</sub>/R<sub>1</sub>。輸入為高度 V<sub>1</sub>、寬度 T<sub>b</sub> 的脈波（C<sub>1</sub> 初始電壓為零）時，輸出在 0 &lt; t &lt; T<sub>b</sub> 期間為斜率 −V<sub>1</sub>/(R<sub>1</sub>C<sub>1</sub>) 的直線，脈波結束後維持在 −V<sub>1</sub>T<sub>b</sub>/(R<sub>1</sub>C<sub>1</sub>)。
+
+<div class="grid2">
+  <figure class="fig"><svg id="f-intc" class="md"></svg>
+    <figcaption>積分器：回授元件為電容 C<sub>1</sub>。</figcaption></figure>
+  <figure class="fig"><svg id="f-int"></svg>
+    <figcaption>脈波輸入的積分器輸出（R<sub>1</sub>C<sub>1</sub> = 10 µs、V<sub>1</sub> = 0.1 V、T<sub>b</sub> = 50 µs）。灰線為輸入，藍線為輸出。</figcaption></figure>
+</div>
+
+RC 低通濾波器是積分器的被動近似：時間常數遠大於觀察時間時，電容電壓仍接近起始段的直線，但隨時間逐漸偏離（指數趨近）。op amp 的虛接地使電阻電流不受輸出電壓影響，因此能維持線性斜坡。
+
+### 2　有限增益：有損積分器
+
+A<sub>0</sub> 有限時，V<sub>X</sub> = −V<sub>out</sub>/A<sub>0</sub>，推導得
+
+<div class="eq"><span class="frac"><span><i>V</i><sub>out</sub></span><span><i>V</i><sub>in</sub></span></span> = −<span class="frac"><span>1</span><span><span class="frac"><span>1</span><span><i>A</i><sub>0</sub></span></span> + (1 + <span class="frac"><span>1</span><span><i>A</i><sub>0</sub></span></span>)<i>R</i><sub>1</sub><i>C</i><sub>1</sub><i>s</i></span></span></div>
+
+極點由原點移到 s = −1/[(1 + A<sub>0</sub>)R<sub>1</sub>C<sub>1</sub>]，稱為有損積分器（lossy integrator）。它等效於電容放大 (1 + A<sub>0</sub>) 倍的 RC 低通電路，低頻增益被限制在 A<sub>0</sub>，不再趨近無窮大。
+
+### 3　微分器
+
+電容與電阻互換位置（C<sub>1</sub> 在輸入、R<sub>1</sub> 在回授）：
+
+<div class="eq key"><span class="frac"><span><i>V</i><sub>out</sub></span><span><i>V</i><sub>in</sub></span></span> = −<i>R</i><sub>1</sub><i>C</i><sub>1</sub><i>s</i>　⟺　<i>V</i><sub>out</sub> = −<i>R</i><sub>1</sub><i>C</i><sub>1</sub><span class="frac"><span>d<i>V</i><sub>in</sub></span><span>d<i>t</i></span></span></div>
+
+電容電流 C<sub>1</sub>dV<sub>in</sub>/dt 全部流過 R<sub>1</sub> 產生輸出。脈波輸入時，輸出只在上升緣與下降緣出現極窄的脈衝（理想上為 δ 函數），平坦段輸出為零。RC 高通濾波器是其被動近似，時間常數越小越接近微分器。
+
+A<sub>0</sub> 有限時，轉移函數為 −R<sub>1</sub>C<sub>1</sub>s/[1 + (1 + R<sub>1</sub>C<sub>1</sub>s)/A<sub>0</sub>]：原點的零點保留，另外在 s = −(1 + A<sub>0</sub>)/(R<sub>1</sub>C<sub>1</sub>) 出現一個極點，稱為有損微分器，等效於電阻縮小 (1 + A<sub>0</sub>) 倍的 RC 高通電路。
+
+<div class="box warn"><span class="tag">易錯處</span>
+<ol>
+  <li>微分器對高頻雜訊的增益與頻率成正比，實務上很少直接使用。</li>
+  <li>非反相組態的增益為 1 + Z<sub>1</sub>/Z<sub>2</sub>，多出的「1」使它無法成為理想積分器或微分器；積分器與微分器一律使用反相組態。</li>
+</ol></div>
+
+<div class="box ex"><span class="tag">例題 8.4</span><br>
+積分器 R<sub>1</sub>C<sub>1</sub> = 10 µs、A<sub>0</sub> = 1000。求有損積分器的極點頻率。
+<ul>
+  <li>|p| = 1/[(1 + 1000) × 10 µs] ≈ 99.9 rad/s。</li>
+  <li>f<sub>p</sub> = 99.9/(2π) ≈ 15.9 Hz。輸入頻率遠高於 15.9 Hz 時，電路才表現為積分器。</li>
+</ul></div>
+
+<div class="practice"><span class="tag">練習 8.3</span>
+<details class="q"><summary>（計算）微分器 R<sub>1</sub> = 10 kΩ、C<sub>1</sub> = 10 nF，輸入為斜率 1 V/ms 的斜坡，求輸出。</summary>
+<ol class="sol"><li>R<sub>1</sub>C<sub>1</sub> = 100 µs；dV<sub>in</sub>/dt = 1000 V/s。</li><li>V<sub>out</sub> = −100 × 10<sup>−6</sup> × 1000 = −0.1 V（定值）。</li></ol></details>
+<details class="q"><summary>（計算）圖中的積分器若 T<sub>b</sub> 改為 80 µs，脈波結束後輸出是多少？</summary>
+<ol class="sol"><li>V<sub>out</sub> = −V<sub>1</sub>T<sub>b</sub>/(R<sub>1</sub>C<sub>1</sub>) = −0.1 × 80/10。</li><li>= −0.8 V。</li></ol></details>
+</div>
+
+## 8.4 差動、儀表、加法放大器與精密整流
+
+### 1　差動放大器
+
+差動放大器（difference amplifier）由反相與非反相放大器疊加而成：V<sub>1</sub> 經 R<sub>1</sub> 進入反相端，R<sub>2</sub> 為回授；V<sub>2</sub> 經 R<sub>3</sub>、R<sub>4</sub> 分壓後進入非反相端。
+
+<div class="eq"><i>V</i><sub>out</sub> = (1 + <span class="frac"><span><i>R</i><sub>2</sub></span><span><i>R</i><sub>1</sub></span></span>)<span class="frac"><span><i>R</i><sub>4</sub></span><span><i>R</i><sub>3</sub> + <i>R</i><sub>4</sub></span></span><i>V</i><sub>2</sub> − <span class="frac"><span><i>R</i><sub>2</sub></span><span><i>R</i><sub>1</sub></span></span><i>V</i><sub>1</sub></div>
+
+令共模輸入（V<sub>1</sub> = V<sub>2</sub>）時輸出為零，需 R<sub>4</sub>/R<sub>3</sub> = R<sub>2</sub>/R<sub>1</sub>；此時 V<sub>out</sub> = (R<sub>2</sub>/R<sub>1</sub>)(V<sub>2</sub> − V<sub>1</sub>)。電阻比值不匹配時共模信號會漏到輸出。
+
+<figure class="fig"><svg id="f-diff" class="md"></svg>
+  <figcaption>差動放大器。R<sub>3</sub> = R<sub>1</sub>、R<sub>4</sub> = R<sub>2</sub> 時輸出只與 V<sub>2</sub> − V<sub>1</sub> 有關。</figcaption></figure>
+
+輸入阻抗：R<sub>3</sub> = R<sub>1</sub>、R<sub>4</sub> = R<sub>2</sub> 時，V<sub>2</sub> 端看到 R<sub>1</sub> + R<sub>2</sub>，V<sub>1</sub> 端看到的阻抗與 V<sub>2</sub> 有關，量級為 R<sub>1</sub>。若為了提高增益 R<sub>2</sub>/R<sub>1</sub> 而縮小 R<sub>1</sub>，輸入阻抗隨之降低，不適合作為電壓放大器。
+
+### 2　儀表放大器
+
+儀表放大器（instrumentation amplifier）在差動放大器的兩個輸入前各加一級電壓隨耦器（或非反相放大器），使兩輸入端都呈現極高的輸入阻抗，增益則由後級的電阻比決定，兩者不再互相牽制。
+
+### 3　加法器
+
+反相放大器的反相端接上多個輸入電阻，各輸入的電流在虛接地匯合後流經回授電阻 R<sub>F</sub>：
+
+<div class="eq key"><i>V</i><sub>out</sub> = −<i>R</i><sub>F</sub>(<span class="frac"><span><i>V</i><sub>1</sub></span><span><i>R</i><sub>1</sub></span></span> + <span class="frac"><span><i>V</i><sub>2</sub></span><span><i>R</i><sub>2</sub></span></span>)</div>
+
+R<sub>1</sub> = R<sub>2</sub> = R 時 V<sub>out</sub> = −(R<sub>F</sub>/R)(V<sub>1</sub> + V<sub>2</sub>)；各電阻不同時為加權加法器（weighted summer）。將部分輸入送入非反相端，即可同時做加法與減法，例如 v<sub>0</sub> = v<sub>1</sub>k<sub>1</sub> + v<sub>2</sub>k<sub>2</sub> − v<sub>3</sub>R<sub>c</sub>/R<sub>3</sub> − v<sub>4</sub>R<sub>c</sub>/R<sub>4</sub>，其中正號項的係數 k 由非反相端的分壓比與 (1 + R<sub>c</sub>/R<sub>b</sub>) 決定。
+
+### 4　應用：電壓穩壓器
+
+系統中不同元件需要不同的電源電壓（例如機器人的馬達、感測器、處理器）。電壓穩壓器（voltage regulator）在負載電流變化時仍輸出接近定值的電壓；常見架構是以非反相放大器放大一個精確的參考電壓：V<sub>out</sub> = (1 + R<sub>1</sub>/R<sub>2</sub>)V<sub>REF</sub>，op amp 的低輸出阻抗使輸出不隨負載改變。
+
+### 5　精密整流器
+
+第 3 章的二極體整流器在 |V<sub>in</sub>| &lt; V<sub>D,on</sub> 時沒有輸出，無法處理小信號。精密整流器（precision rectifier）把二極體放進 op amp 的回授迴路：
+
+- V<sub>in</sub> &gt; 0：op amp 輸出 V<sub>Y</sub> 升高使二極體導通，迴路閉合，虛短路使 V<sub>out</sub> = V<sub>in</sub>；op amp 輸出自動比 V<sub>out</sub> 高出 V<sub>D,on</sub>。
+- V<sub>in</sub> &lt; 0：op amp 輸出往負飽和，二極體截止，V<sub>out</sub> 經負載拉到 0。
+
+等效上，二極體的導通電壓被除以 A<sub>0</sub>：只要輸入超過約 V<sub>D,on</sub>/A<sub>0</sub>，電路即可整流。反相型精密整流器在 V<sub>in</sub> &gt; 0 時二極體導通，V<sub>Y</sub> 被釘在約 −V<sub>D,on</sub>、反相端為虛接地；V<sub>in</sub> &lt; 0 時二極體截止，V<sub>Y</sub> 往正飽和，反相端電壓等於 V<sub>in</sub>。
+
+<figure class="fig"><svg id="f-prect"></svg>
+  <figcaption>振幅 1 V 正弦輸入下，一般二極體整流（灰色虛線，V<sub>D,on</sub> = 0.7 V）與精密整流（藍線）的輸出。精密整流器的輸出在整個正半週都等於輸入。</figcaption></figure>
+
+<div class="box ex"><span class="tag">例題 8.5</span><br>
+差動放大器 R<sub>1</sub> = R<sub>3</sub> = 10 kΩ、R<sub>2</sub> = R<sub>4</sub> = 50 kΩ，V<sub>2</sub> = 1.02 V、V<sub>1</sub> = 1.00 V。求 V<sub>out</sub>。若 R<sub>4</sub> 誤差 +2%（51 kΩ），共模增益為何？
+<ul>
+  <li>匹配時 V<sub>out</sub> = 5 × (1.02 − 1.00) = 0.1 V。</li>
+  <li>R<sub>4</sub> = 51 kΩ，V<sub>1</sub> = V<sub>2</sub> = V<sub>c</sub>：V<sub>out</sub> = V<sub>c</sub>[6 × 51/61 − 5] ≈ 0.0164V<sub>c</sub>。</li>
+  <li>2% 的電阻誤差使共模增益由 0 變成約 0.016；V<sub>c</sub> = 1 V 時輸出多出 16 mV，與 0.1 V 的有用信號相比已不可忽略。</li>
+</ul></div>
+
+<div class="practice"><span class="tag">練習 8.4</span>
+<details class="q"><summary>（計算）加法器 R<sub>F</sub> = 20 kΩ、R<sub>1</sub> = 10 kΩ、R<sub>2</sub> = 20 kΩ，V<sub>1</sub> = 0.5 V、V<sub>2</sub> = −0.3 V，求 V<sub>out</sub>。</summary>
+<ol class="sol"><li>V<sub>out</sub> = −(2 × 0.5 + 1 × (−0.3))。</li><li>= −0.7 V。</li></ol></details>
+<details class="q"><summary>（計算）精密整流器使用 A<sub>0</sub> = 10<sup>4</sup> 的 op amp 與 V<sub>D,on</sub> = 0.7 V 的二極體，可整流的最小輸入約為多少？</summary>
+<ol class="sol"><li>V<sub>min</sub> ≈ V<sub>D,on</sub>/A<sub>0</sub> = 0.7/10<sup>4</sup>。</li><li>= 70 µV，遠小於一般二極體整流的 0.7 V。</li></ol></details>
+</div>
+
+## 8.5 非理想效應：偏移電壓與輸入偏壓電流
+
+### 1　直流偏移
+
+輸入級元件不匹配使 op amp 在輸入差為零時輸出不為零，輸入輸出特性曲線整體向左或向右平移。這個效應以串接在輸入端的偏移電壓 V<sub>os</sub> 表示，其大小與極性隨製程與溫度變化，只能給出統計範圍。
+
+偏移與信號一起被放大。非反相放大器的輸出為
+
+<div class="eq"><i>V</i><sub>out</sub> = (1 + <i>R</i><sub>1</sub>/<i>R</i><sub>2</sub>)(<i>V</i><sub>in</sub> + <i>V</i><sub>os</sub>)</div>
+
+多級直接耦合時，前級輸出的偏移再被後級放大，可能使後級飽和。
+
+### 2　積分器的偏移
+
+積分器把 V<sub>os</sub> 視為定值輸入持續積分：V<sub>out</sub> ≈ V<sub>os</sub> + V<sub>os</sub>t/(R<sub>1</sub>C<sub>1</sub>)，經過一段時間必然飽和。在 C<sub>1</sub> 兩端並聯電阻 R<sub>2</sub> 可提供直流回授路徑：
+
+<div class="eq"><span class="frac"><span><i>V</i><sub>out</sub></span><span><i>V</i><sub>in</sub></span></span> = −<span class="frac"><span><i>R</i><sub>2</sub>/<i>R</i><sub>1</sub></span><span><i>R</i><sub>2</sub><i>C</i><sub>1</sub><i>s</i> + 1</span></span>，直流輸出偏移 = (1 + <i>R</i><sub>2</sub>/<i>R</i><sub>1</sub>)<i>V</i><sub>os</sub></div>
+
+代價是極點不在原點，電路只在 ω ≫ 1/(R<sub>2</sub>C<sub>1</sub>) 時表現為積分器。
+
+### 3　輸入偏壓電流
+
+以 BJT 為輸入級的 op amp，兩輸入端需要直流基極電流 I<sub>B1</sub>（+ 端）、I<sub>B2</sub>（− 端），稱為輸入偏壓電流（input bias current）。以非反相放大器、V<sub>in</sub> = 0 為例：+ 端為 0 V，虛短路使 − 端也為 0 V，R<sub>2</sub> 上沒有電流，因此 I<sub>B2</sub> 全部由輸出經 R<sub>1</sub> 提供：
+
+<div class="eq"><i>V</i><sub>out</sub> = <i>R</i><sub>1</sub><i>I</i><sub>B2</sub></div>
+
+I<sub>B1</sub> 從接地的信號源直接流入 + 端，不影響輸出。抵銷方法：在 + 端串入電阻 R<sub>1</sub>‖R<sub>2</sub>，使 I<sub>B1</sub> 在 + 端產生 −I<sub>B1</sub>(R<sub>1</sub>‖R<sub>2</sub>) 的修正電壓。只要 I<sub>B1</sub> = I<sub>B2</sub>，修正量會隨電晶體 β 的製程變異同步變化，輸出誤差保持為零。
+
+積分器中，I<sub>B2</sub> 流入 C<sub>1</sub> 被持續積分，輸出以 I<sub>B2</sub>/C<sub>1</sub> 的斜率漂移；在 + 端串入與 R<sub>1</sub> 相等的電阻可抵銷此項，但偏移電壓等其他誤差仍會使輸出最終飽和。
+
+<div class="box ex"><span class="tag">例題 8.6</span><br>
+兩級非反相放大器串接，每級增益 100，op amp 的 V<sub>os</sub> = 2 mV，輸出擺幅 ±5 V。輸入為零時第二級輸出為何？
+<ul>
+  <li>第一級輸出偏移：100 × 2 mV = 0.2 V。</li>
+  <li>第二級輸入為 0.2 V（加上本身 2 mV），輸出 ≈ 100 × 0.202 = 20.2 V，超過 ±5 V，第二級飽和。</li>
+  <li>多級放大器需要在級間加耦合電容或偏移校正，否則有用信號無法被放大。</li>
+</ul></div>
+
+<div class="practice"><span class="tag">練習 8.5</span>
+<details class="q"><summary>（計算）非反相放大器 R<sub>1</sub> = 100 kΩ、R<sub>2</sub> = 10 kΩ，I<sub>B1</sub> = I<sub>B2</sub> = 0.5 µA。求輸入為零時的輸出誤差，以及抵銷電阻值。</summary>
+<ol class="sol"><li>V<sub>out</sub> = R<sub>1</sub>I<sub>B2</sub> = 100 kΩ × 0.5 µA = 50 mV。</li><li>抵銷電阻 = R<sub>1</sub>‖R<sub>2</sub> = 100 × 10/110 ≈ 9.09 kΩ，串在 + 端。</li></ol></details>
+<details class="q"><summary>（計算）積分器 C<sub>1</sub> = 1 nF，I<sub>B2</sub> = 100 nA、無抵銷電阻。輸出漂移到 10 V 需要多久？</summary>
+<ol class="sol"><li>漂移斜率 = I<sub>B2</sub>/C<sub>1</sub> = 100 V/s。</li><li>t = 10/100 = 0.1 s。</li></ol></details>
+</div>
+
+## 8.6 非理想效應：頻寬、迴轉率與輸出電阻
+
+### 1　頻率響應的三個頻段
+
+電容與電感的阻抗隨頻率改變，使增益隨頻率變化。以 R<sub>1</sub>、C<sub>1</sub> 低通分壓為例，V<sub>out</sub>/V<sub>in</sub> = 1/(1 + R<sub>1</sub>C<sub>1</sub>s)，在 ω<sub>−3dB</sub> = 1/(R<sub>1</sub>C<sub>1</sub>) 時幅度降為 1/√2。放大器的頻率響應通常分成三段：
+
+- **低頻段**：耦合電容與旁路電容的阻抗變大，增益下降。
+- **中頻段**（midband）：所有電容的影響可忽略，增益與相位（0° 或 180°）為定值。
+- **高頻段**：電晶體內部電容使增益下降。
+
+### 2　增益頻寬積
+
+op amp 內部電容使開迴路增益從某個頻率開始下降，常以單極點模型描述：
+
+<div class="eq"><i>A</i>(<i>s</i>) = <span class="frac"><span><i>A</i><sub>0</sub></span><span>1 + <i>s</i>/<i>ω</i><sub>1</sub></span></span></div>
+
+ω<sub>1</sub> 為開迴路 −3 dB 頻寬；增益降到 1 的頻率 ω<sub>u</sub> ≈ A<sub>0</sub>ω<sub>1</sub> 稱為單位增益頻寬（unity-gain bandwidth）。非反相放大器代入 A(s) 得閉迴路極點
+
+<div class="eq key"><i>ω</i><sub>p,closed</sub> = <i>ω</i><sub>1</sub>(1 + <span class="frac"><span><i>A</i><sub>0</sub><i>R</i><sub>2</sub></span><span><i>R</i><sub>1</sub> + <i>R</i><sub>2</sub></span></span>) ≈ <span class="frac"><span><i>A</i><sub>0</sub><i>ω</i><sub>1</sub></span><span>1 + <i>R</i><sub>1</sub>/<i>R</i><sub>2</sub></span></span></div>
+
+閉迴路增益乘以閉迴路頻寬約等於 A<sub>0</sub>ω<sub>1</sub>：負回授以降低低頻增益換取更寬的頻寬。
+
+<figure class="fig">
+  <div class="ctrl">
+    <label>閉迴路增益 G = 10^ <input type="range" id="bwG" min="0" max="3" step="0.1" value="1"></label><output id="bwGo"></output>
+  </div>
+  <div class="readout" id="bwR"></div>
+  <svg id="f-bode"></svg>
+  <figcaption>開迴路增益（灰線，A<sub>0</sub> = 10<sup>5</sup>、f<sub>1</sub> = 10 Hz）與非反相放大器的閉迴路增益（藍線）。閉迴路曲線在與開迴路曲線相交處轉折；G 每增加 10 倍，頻寬減為 1/10。</figcaption>
+</figure>
+
+### 3　迴轉率
+
+大信號輸入時，op amp 內部以有限電流對電容充電，輸出變化率有上限，稱為迴轉率（slew rate, SR）：SR = max|dV<sub>out</sub>/dt|。小信號時輸入加倍、輸出斜率也加倍（線性）；輸出要求的斜率超過 SR 後，輸出改以固定斜率上升，稱為迴轉（slewing），此時輸出不再是輸入的線性函數，建立時間（settling time）也比只受閉迴路時間常數限制時更長。
+
+輸出為 V<sub>0</sub> sin ωt 時最大斜率為 ωV<sub>0</sub>。輸出以最大擺幅 (V<sub>max</sub> − V<sub>min</sub>)/2 為振幅仍不迴轉的最高頻率稱為全功率頻寬（full-power bandwidth）：
+
+<div class="eq key"><i>ω</i><sub>FP</sub> = <span class="frac"><span>SR</span><span>(<i>V</i><sub>max</sub> − <i>V</i><sub>min</sub>)/2</span></span></div>
+
+<figure class="fig">
+  <div class="ctrl">
+    <label>頻率 f <input type="range" id="srF" min="2" max="30" step="0.5" value="12"></label><output id="srFo"></output>
+  </div>
+  <div class="readout" id="srR"></div>
+  <svg id="f-slew"></svg>
+  <figcaption>SR = 0.5 V/µs、振幅 10 V 的正弦輸出。灰色虛線為理想輸出，藍線為受迴轉率限制的輸出。f 高於約 7.96 kHz 後輸出變成三角波狀，振幅也下降。</figcaption>
+</figure>
+
+### 4　輸出電阻
+
+實際 op amp 的輸出電阻 R<sub>out</sub> 不為零。反相放大器中，R<sub>out</sub> 與回授電阻 R<sub>1</sub> 形成分壓，近似等效於把開迴路增益降為 A<sub>0</sub>R<sub>1</sub>/(R<sub>1</sub> + R<sub>out</sub>)（R<sub>out</sub> ≪ R<sub>1</sub> 時），因而增大增益誤差。R<sub>1</sub> 越小（或負載越重），此效應越明顯。
+
+### 5　CMRR 與 PSRR
+
+實際 op amp 的輸出同時受差模輸入、共模輸入與電源變動影響：V<sub>out</sub> = A<sub>d</sub>V<sub>id</sub> + A<sub>CM</sub>V<sub>CM</sub> + A<sub>vdd</sub>V<sub>dd</sub> + A<sub>vss</sub>V<sub>ss</sub>。
+
+- 共模拒斥比（common-mode rejection ratio）：CMRR = A<sub>d</sub>/A<sub>CM</sub>。
+- 電源拒斥比（power-supply rejection ratio）：PSRR<sup>+</sup> = A<sub>d</sub>/A<sub>vdd</sub>、PSRR<sup>−</sup> = A<sub>d</sub>/A<sub>vss</sub>。
+
+兩者皆越大越好，通常以 dB 表示。
+
+<div class="box ex"><span class="tag">例題 8.7</span><br>
+op amp 的 A<sub>0</sub> = 10<sup>5</sup>、f<sub>1</sub> = 10 Hz、SR = 0.5 V/µs、輸出擺幅 ±10 V。(a) 增益 10 的非反相放大器頻寬為何？(b) 全功率頻寬為何？
+<ul>
+  <li>(a) f<sub>u</sub> = A<sub>0</sub>f<sub>1</sub> = 1 MHz；f<sub>p,closed</sub> = 10 × (1 + 10<sup>5</sup>/10) ≈ 100 kHz。</li>
+  <li>(b) ω<sub>FP</sub> = 0.5 × 10<sup>6</sup>/10 = 5 × 10<sup>4</sup> rad/s，f<sub>FP</sub> ≈ 7.96 kHz。</li>
+  <li>小信號頻寬達 100 kHz，滿擺幅輸出卻在 8 kHz 以上就開始迴轉：大信號應用要同時檢查兩項限制。</li>
+</ul></div>
+
+<div class="practice"><span class="tag">練習 8.6</span>
+<details class="q"><summary>（計算）A<sub>d</sub> = 10<sup>4</sup>、A<sub>CM</sub> = 0.1，CMRR 以 dB 表示為多少？</summary>
+<ol class="sol"><li>CMRR = 10<sup>4</sup>/0.1 = 10<sup>5</sup>。</li><li>20 log 10<sup>5</sup> = 100 dB。</li></ol></details>
+<details class="q"><summary>（是非）加上負回授後放大器的增益與頻寬都會增加。</summary>
+<ol class="sol"><li>✗。頻寬增加，但低頻增益由 A<sub>0</sub> 降為約 1 + R<sub>1</sub>/R<sub>2</sub>；兩者乘積約維持 A<sub>0</sub>ω<sub>1</sub>。</li></ol></details>
+</div>
+
+## 附錄 公式・陷阱・測驗
+
+### A　公式總表
+
+<div class="tbl"><table>
+  <tr><th>項目</th><th>公式</th><th>備註</th></tr>
+  <tr><td>op amp 模型</td><td>V<sub>out</sub> = A<sub>0</sub>(V<sub>in1</sub> − V<sub>in2</sub>)</td><td>V<sub>in1</sub>：+ 端</td></tr>
+  <tr><td>電壓隨耦器</td><td>A<sub>0</sub>/(1 + A<sub>0</sub>)</td><td>理想為 1</td></tr>
+  <tr><td>非反相放大器</td><td>1 + R<sub>1</sub>/R<sub>2</sub></td><td>輸入阻抗 → ∞</td></tr>
+  <tr><td>反相放大器</td><td>−R<sub>1</sub>/R<sub>2</sub></td><td>輸入阻抗 = R<sub>2</sub></td></tr>
+  <tr><td>有限 A<sub>0</sub> 誤差</td><td>≈ (1 + R<sub>1</sub>/R<sub>2</sub>)/A<sub>0</sub></td><td>兩種組態相同</td></tr>
+  <tr><td>積分器</td><td>−1/(R<sub>1</sub>C<sub>1</sub>s)</td><td>有損：極點 −1/[(1 + A<sub>0</sub>)R<sub>1</sub>C<sub>1</sub>]</td></tr>
+  <tr><td>微分器</td><td>−R<sub>1</sub>C<sub>1</sub>s</td><td>有損：極點 −(1 + A<sub>0</sub>)/(R<sub>1</sub>C<sub>1</sub>)</td></tr>
+  <tr><td>差動放大器</td><td>(R<sub>2</sub>/R<sub>1</sub>)(V<sub>2</sub> − V<sub>1</sub>)</td><td>需 R<sub>4</sub>/R<sub>3</sub> = R<sub>2</sub>/R<sub>1</sub></td></tr>
+  <tr><td>加法器</td><td>−R<sub>F</sub>(V<sub>1</sub>/R<sub>1</sub> + V<sub>2</sub>/R<sub>2</sub>)</td><td></td></tr>
+  <tr><td>偏移（非反相）</td><td>(1 + R<sub>1</sub>/R<sub>2</sub>)(V<sub>in</sub> + V<sub>os</sub>)</td><td></td></tr>
+  <tr><td>偏壓電流（非反相）</td><td>V<sub>out</sub> = R<sub>1</sub>I<sub>B2</sub></td><td>抵銷：+ 端串 R<sub>1</sub>‖R<sub>2</sub></td></tr>
+  <tr><td>閉迴路頻寬</td><td>ω<sub>1</sub>(1 + A<sub>0</sub>R<sub>2</sub>/(R<sub>1</sub> + R<sub>2</sub>))</td><td>≈ A<sub>0</sub>ω<sub>1</sub>/G</td></tr>
+  <tr><td>全功率頻寬</td><td>ω<sub>FP</sub> = SR/[(V<sub>max</sub> − V<sub>min</sub>)/2]</td><td></td></tr>
+  <tr><td>CMRR／PSRR</td><td>A<sub>d</sub>/A<sub>CM</sub>；A<sub>d</sub>/A<sub>vdd</sub></td><td></td></tr>
+</table></div>
+
+### B　常見陷阱
+
+<div class="box warn"><span class="tag">易錯處</span>
+<ol>
+  <li><b>虛短路的前提</b>：只有負回授且未飽和時成立；比較器、正回授電路不能用。</li>
+  <li><b>虛接地沒有電流流入 op amp</b>：反相端電壓為零，但流過 R<sub>2</sub> 的電流全部轉向流過 R<sub>1</sub>。</li>
+  <li><b>電阻命名</b>：本章（Razavi）非反相與反相放大器的回授電阻都叫 R<sub>1</sub>，增益分別為 1 + R<sub>1</sub>/R<sub>2</sub> 與 −R<sub>1</sub>/R<sub>2</sub>；其他教材常把回授電阻稱為 R<sub>2</sub> 或 R<sub>f</sub>。</li>
+  <li><b>增益誤差與閉迴路增益成正比</b>：高增益組態對 A<sub>0</sub> 的要求更高。</li>
+  <li><b>積分器的直流</b>：理想積分器對直流增益無窮大，偏移與偏壓電流都會使其飽和，需要並聯電阻或週期性重置。</li>
+  <li><b>小信號頻寬與全功率頻寬不同</b>：前者由增益頻寬積決定，後者由迴轉率與輸出振幅決定。</li>
+</ol></div>
+
+### C　自我測驗
+
+<details class="q"><summary>1. 非反相放大器 R<sub>1</sub> = 99 kΩ、R<sub>2</sub> = 1 kΩ、A<sub>0</sub> = 10<sup>4</sup>，相對增益誤差約為多少？</summary>(1 + 99)/10<sup>4</sup> = 1%。實際增益 = 1/(0.01 + 0.0001) ≈ 99.0。</details>
+
+<details class="q"><summary>2. 為什麼反相放大器的輸入阻抗等於 R<sub>2</sub>？</summary>反相端為虛接地，輸入電流 = V<sub>in</sub>/R<sub>2</sub>，所以 V<sub>in</sub>/I<sub>in</sub> = R<sub>2</sub>。</details>
+
+<details class="q"><summary>3. 積分器 R<sub>1</sub> = 100 kΩ、C<sub>1</sub> = 0.1 µF，輸入 −0.5 V 直流，1 ms 後輸出變化多少？</summary>R<sub>1</sub>C<sub>1</sub> = 10 ms；ΔV<sub>out</sub> = −(−0.5)(1 ms)/(10 ms) = +0.05 V。</details>
+
+<details class="q"><summary>4. （是非）非反相組態把 R<sub>1</sub> 換成電容即可得到理想積分器。</summary>✗。增益為 1 + Z<sub>1</sub>/Z<sub>2</sub>，多出的 1 使其無法成為理想積分器。</details>
+
+<details class="q"><summary>5. 儀表放大器相對於差動放大器解決了什麼問題？</summary>差動放大器的輸入阻抗與增益（R<sub>2</sub>/R<sub>1</sub>）互相牽制；儀表放大器在輸入端加緩衝級，使輸入阻抗極高而增益仍由後級電阻比設定。</details>
+
+<details class="q"><summary>6. f<sub>u</sub> = 1 MHz 的 op amp 做增益 50 的非反相放大器，頻寬約為多少？</summary>f<sub>u</sub>/G = 1 MHz/50 = 20 kHz。</details>
+
+<details class="q"><summary>7. SR = 1 V/µs，要以振幅 5 V 輸出正弦波而不迴轉，最高頻率為何？</summary>ω = SR/V<sub>0</sub> = 10<sup>6</sup>/5 = 2 × 10<sup>5</sup> rad/s，f ≈ 31.8 kHz。</details>
+
+<details class="q"><summary>8. 非反相放大器的偏壓電流抵銷電阻為何是 R<sub>1</sub>‖R<sub>2</sub>？</summary>V<sub>in</sub> = 0 時 − 端看到的直流電阻為 R<sub>1</sub>‖R<sub>2</sub>（輸出端為低阻抗電壓源，輸入為零時其電壓近似為零）。+ 端串入相同電阻，I<sub>B1</sub> = I<sub>B2</sub> 時兩端的壓降相同，差模誤差為零。</details>
+
+### D　名詞對照表
+
+| 中文 | English |
+|------|---------|
+| 運算放大器 | operational amplifier, op amp |
+| 非反相輸入 | noninverting input |
+| 反相輸入 | inverting input |
+| 開迴路增益 | open-loop gain |
+| 閉迴路增益 | closed-loop gain |
+| 差模 | differential mode |
+| 共模 | common mode |
+| 轉導放大器 | transconductance amplifier |
+| 轉阻放大器 | transimpedance amplifier |
+| 輸入共模範圍 | input common-mode range |
+| 輸出擺幅 | output swing |
+| 直流偏移電壓 | DC offset voltage |
+| 虛短路 | virtual short |
+| 虛接地 | virtual ground |
+| 電壓隨耦器 | voltage follower |
+| 單位增益緩衝器 | unity-gain buffer |
+| 非反相放大器 | noninverting amplifier |
+| 反相放大器 | inverting amplifier |
+| 有損積分器 | lossy integrator |
+| 差動放大器 | difference amplifier |
+| 儀表放大器 | instrumentation amplifier |
+| 加權加法器 | weighted summer |
+| 電壓穩壓器 | voltage regulator |
+| 精密整流器 | precision rectifier |
+| 輸入偏壓電流 | input bias current |
+| 單位增益頻寬 | unity-gain bandwidth |
+| 迴轉率 | slew rate |
+| 建立時間 | settling time |
+| 全功率頻寬 | full-power bandwidth |
+| 共模拒斥比 | common-mode rejection ratio, CMRR |
+| 電源拒斥比 | power-supply rejection ratio, PSRR |
