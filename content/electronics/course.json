@@ -1,0 +1,24 @@
+{
+  "slug": "electronics",
+  "title": "電子學",
+  "title_en": "Microelectronics",
+  "textbook": "B. Razavi, Fundamentals of Microelectronics, 2nd ed., Wiley",
+  "textbook_short": "Razavi《Fundamentals of Microelectronics》",
+  "description": "從半導體物理到放大器設計。每章含互動圖、例題、練習與附錄測驗。",
+  "scripts": ["lib.js"],
+  "disclaimer": "本教材依 Razavi《Fundamentals of Microelectronics》章節架構編排；說明文字為重新撰寫，例題數值均經重新計算。標示「補充」者為輔助理解的延伸內容。題號與措辭請以課本為準。",
+  "chapters": [
+    {"no": 1,  "slug": "introduction",          "title": "電子學導論",          "title_en": "Introduction to Microelectronics", "source": "Slide 1"},
+    {"no": 2,  "slug": "semiconductor-physics", "title": "半導體基礎物理",      "title_en": "Basic Physics of Semiconductors",  "source": "Slide 2；課本 Ch.2"},
+    {"no": 3,  "slug": "diode-models",          "title": "二極體模型與電路",    "title_en": "Diode Models and Circuits",        "source": "Slide 3；課本 Ch.3"},
+    {"no": 4,  "slug": "bjt-physics",           "title": "雙極性電晶體物理",    "title_en": "Physics of Bipolar Transistors",   "source": "Slide 5"},
+    {"no": 5,  "slug": "bipolar-amplifiers",    "title": "雙極性放大器",        "title_en": "Bipolar Amplifiers",               "source": "Slide 6"},
+    {"no": 6,  "slug": "mos-physics",           "title": "MOS 電晶體物理",      "title_en": "Physics of MOS Transistors",       "source": "Slide 7"},
+    {"no": 7,  "slug": "cmos-amplifiers",       "title": "CMOS 放大器",         "title_en": "CMOS Amplifiers",                  "source": "Slide 8、Slide 13"},
+    {"no": 8,  "slug": "op-amp",                "title": "運算放大器黑盒子模型", "title_en": "Operational Amplifier as a Black Box", "source": "Slide 4"},
+    {"no": 9,  "slug": "cascodes-current-mirrors", "title": "疊接與電流鏡",     "title_en": "Cascodes and Current Mirrors",     "source": "Slide 9"},
+    {"no": 10, "slug": "differential-amplifiers", "title": "差動放大器",        "title_en": "Differential Amplifiers",          "source": "Slide 10"},
+    {"no": 11, "slug": "frequency-response",    "title": "頻率響應",            "title_en": "Frequency Response",               "source": "Slide 11"},
+    {"no": 12, "slug": "feedback",              "title": "回授",                "title_en": "Feedback",                         "source": "Slide 12"}
+  ]
+}

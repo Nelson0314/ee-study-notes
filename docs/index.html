@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EE Notes</title>
+<meta name="description" content="電機課程圖解講義：互動圖、例題詳解與自我測驗">
+<link rel="stylesheet" href="assets/css/notes.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="a-fg" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fg"/></marker>
+    <marker id="a-e" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-e"/></marker>
+    <marker id="a-h" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-h"/></marker>
+    <marker id="a-acc" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-acc"/></marker>
+    <marker id="a-mu" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-mu"/></marker>
+    <marker id="a-pos" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-pos"/></marker>
+    <marker id="a-neg" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-neg"/></marker>
+  </defs>
+</svg>
+
+<div class="sitebar"><div class="in">
+  <a class="brand" href="index.html">EE Notes</a>
+  <a href="index.html#courses">課程</a>
+  <a href="guide.html">編寫規範</a>
+  <span class="sp"></span>
+  <a href="https://github.com/">GitHub</a>
+</div></div>
+<header class="top">
+  <div>
+    <h1>EE Notes</h1>
+    <p>電機課程圖解講義：互動圖、例題詳解與自我測驗</p>
+  </div>
+  <button id="themeBtn" type="button">切換深／淺色</button>
+</header>
+<div class="page">
+<div class="goal"><b>本站的頁面怎麼產生：</b>
+<ul>
+  <li>每一章是一個 Markdown 檔（<code>content/&lt;課程&gt;/chNN-&lt;slug&gt;.md</code>），使用固定的章節骨架與元件。</li>
+  <li><code>tools/check.py</code> 依 <a href="guide.html">編寫規範</a> 驗證結構，<code>tools/build.py</code> 產生全部頁面。</li>
+  <li>新增一章只需：在 <code>course.json</code> 登錄 → 依範本撰寫 Markdown → 執行 build。</li>
+</ul></div>
+<h2 id="courses">課程</h2>
+<div class="cards">
+<a class="card" href="electronics/index.html">
+  <h3>電子學　<small style="color:var(--muted);font-weight:400">Microelectronics</small></h3>
+  <p>從半導體物理到放大器設計。每章含互動圖、例題、練習與附錄測驗。</p>
+  <div class="meta">已完成 2 / 12 章 · Razavi《Fundamentals of Microelectronics》</div>
+</a>
+</div>
+<h2>最近更新</h2>
+<ol class="chlist">
+<li><span class="n">2026-11-13</span><span><a href="electronics/ch03.html">電子學 第 3 章　二極體模型與電路</a><span class="en">以理想、定電壓與指數模型分析二極體電路，涵蓋轉移特性、小信號電阻與整流、穩壓、限幅、倍壓等應用。</span></span></li>
+<li><span class="n">2026-11-13</span><span><a href="electronics/ch02.html">電子學 第 2 章　半導體基礎物理</a><span class="en">由原子結構、摻雜與載子傳輸推導 PN 接面的平衡、偏壓行為與二極體 I/V 方程式。</span></span></li>
+</ol>
+</div>
+<script src="assets/js/core.js"></script>
+<script src="assets/js/theme.js"></script>
+</body>
+</html>

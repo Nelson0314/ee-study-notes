@@ -1,0 +1,622 @@
+---
+chapter: 3
+summary: 以理想、定電壓與指數模型分析二極體電路，涵蓋轉移特性、小信號電阻與整流、穩壓、限幅、倍壓等應用。
+updated: 2026-11-13
+---
+
+## 0 本章導覽
+
+第 2 章由半導體物理推導出 PN 接面的電流方程式。本章將二極體視為電路元件，建立不同精確度的模型，並以這些模型分析整流、穩壓、限幅、倍壓等電路。分析的核心問題是：二極體在某一輸入下處於導通或截止，以及兩種狀態的邊界發生在哪一個輸入值。
+
+<div class="flow">
+  <div class="stage"><h4>① 模型（3.1–3.2）</h4><ul><li>理想二極體</li><li>定電壓模型</li><li>指數模型</li></ul></div>
+  <div class="arr">➜</div>
+  <div class="stage"><h4>② 分析方法（3.3–3.4）</h4><ul><li>假設狀態 → 驗證</li><li>轉移特性 V<sub>out</sub>(V<sub>in</sub>)</li><li>小信號電阻 r<sub>d</sub> = V<sub>T</sub>/I<sub>D</sub></li></ul></div>
+  <div class="arr">➜</div>
+  <div class="stage"><h4>③ 應用（3.5）</h4><ul><li>整流與漣波</li><li>穩壓、限幅</li><li>倍壓、準位移位</li></ul></div>
+</div>
+
+<div class="goal"><b>讀完本章應能：</b>
+<ul>
+  <li>依問題所需精確度，選用理想、定電壓或指數模型</li>
+  <li>以「假設導通／截止 → 檢查一致性」的程序分析含二極體的電路</li>
+  <li>繪出電路的輸入輸出轉移特性，並標出轉折點</li>
+  <li>計算小信號電阻 r<sub>d</sub>，並判斷小信號近似何時成立</li>
+  <li>計算整流器的漣波電壓、導通角、峰值電流與峰值逆向電壓（PIV）</li>
+  <li>分析二極體穩壓器、限幅器與倍壓器</li>
+</ul></div>
+
+## 3.1 理想二極體
+
+### 1　單向元件的需求
+
+電阻、電容、電感都是線性元件：電流方向反轉時，元件的行為以相同規則對稱地反轉。許多電路功能需要<b>非對稱</b>的行為，例如把交流轉成直流（手機充電器）、讓訊號只在某一範圍內通過、保護電路免受過大電壓。這些功能都需要一個「電流只能單向流動」的元件。
+
+以電阻為參照：電阻的 I/V 特性是一條通過原點的直線，斜率為 1/R。若要求元件在一個方向呈現 R = 0（短路）、另一方向呈現 R = ∞（開路），其 I/V 特性就成為兩段折線，這就是理想二極體。
+
+### 2　理想二極體的定義
+
+<div class="grid2">
+  <figure class="fig"><svg id="f-sym" class="sm"></svg>
+    <figcaption>二極體符號。三角形指向為允許的電流方向，由陽極（anode）流向陰極（cathode）。V<sub>D</sub> 以陽極為正端定義。</figcaption></figure>
+  <figure class="fig"><svg id="f-ideal"></svg>
+    <figcaption>理想二極體的 I/V 特性：V<sub>D</sub> &lt; 0 時 I<sub>D</sub> = 0；I<sub>D</sub> &gt; 0 時 V<sub>D</sub> = 0。</figcaption></figure>
+</div>
+
+<div class="tbl"><table>
+  <tr><th>狀態</th><th>條件</th><th>等效電路</th><th>驗證一致性時檢查</th></tr>
+  <tr><td><b>導通（on）</b></td><td>順偏</td><td>短路（V<sub>D</sub> = 0）</td><td>求出的 I<sub>D</sub> ≥ 0</td></tr>
+  <tr><td><b>截止（off）</b></td><td>逆偏</td><td>開路（I<sub>D</sub> = 0）</td><td>求出的 V<sub>D</sub> ≤ 0</td></tr>
+</table></div>
+
+<div class="box"><span class="tag">分析程序</span>
+<ol>
+  <li>假設二極體為導通或截止（依直覺選擇較可能的一種）。</li>
+  <li>以對應的等效電路（短路或開路）求解整個電路。</li>
+  <li>檢查結果：假設導通則需 I<sub>D</sub> ≥ 0；假設截止則需 V<sub>D</sub> ≤ 0。</li>
+  <li>若矛盾，改用另一種假設重新求解。</li>
+</ol>
+多個二極體的電路需逐一檢查每個二極體；最多需嘗試 2<sup>n</sup> 種組合，實際上通常可由電路結構排除大部分。</div>
+
+<div class="box ex"><span class="tag">例題 3.1</span><br>
+電壓源 V<sub>in</sub> 串聯理想二極體 D 與電阻 R = 1 kΩ，D 的陽極接 V<sub>in</sub> 的正端。分別求 V<sub>in</sub> = +2 V 與 −2 V 時的電流。<figure class="fig"><svg id="e31" class="md"></svg><figcaption>例題 3.1 的電路。</figcaption></figure>
+<ul>
+  <li>V<sub>in</sub> = +2 V：假設 D 導通（短路），I = 2 V / 1 kΩ = 2 mA &gt; 0，假設成立。</li>
+  <li>V<sub>in</sub> = −2 V：若假設導通得 I = −2 mA &lt; 0，矛盾；改假設截止，I = 0，V<sub>D</sub> = −2 V ≤ 0，成立。</li>
+</ul>
+電路的 I–V<sub>in</sub> 關係因此為：V<sub>in</sub> &gt; 0 時 I = V<sub>in</sub>/R，V<sub>in</sub> &lt; 0 時 I = 0。</div>
+
+### 3　應用：整流器（Rectifier）
+
+將上述電路的輸入改為正弦波 <span class="m"><i>V</i><sub>in</sub> = <i>V</i><sub>p</sub> sin ω<i>t</i></span>，並取電阻上的電壓為輸出。正半週 D 導通，<span class="m"><i>V</i><sub>out</sub> = <i>V</i><sub>in</sub></span>；負半週 D 截止，<span class="m"><i>V</i><sub>out</sub> = 0</span>。輸出只保留正半週，平均值不為零，這就是<b>半波整流器（half-wave rectifier）</b>。
+
+<div class="grid2">
+  <figure class="fig"><svg id="f-hw1" class="md"></svg>
+    <figcaption>半波整流器：電壓源、二極體與負載電阻 R<sub>L</sub> 串聯。</figcaption></figure>
+  <figure class="fig"><svg id="f-hw1w"></svg>
+    <figcaption>V<sub>p</sub> = 3 V 的輸入與輸出。虛線為理想二極體模型的輸出；實線為定電壓模型（V<sub>D,on</sub> = 0.8 V）的輸出，其峰值降低 0.8 V，導通區間也變短。</figcaption></figure>
+</div>
+
+整流輸出的平均值（理想模型）：
+
+<div class="eq"><i>V</i><sub>out,avg</sub> = <span class="frac"><span>1</span><span><i>T</i></span></span> ∫<sub>0</sub><sup><i>T</i>/2</sup> <i>V</i><sub>p</sub> sin ω<i>t</i> d<i>t</i> = <span class="frac"><span><i>V</i><sub>p</sub></span><span>π</span></span></div>
+
+此輸出仍隨時間大幅變化，不能直接作為直流電源。3.5.1 節加入電容使其平滑。
+
+<div class="box note"><span class="tag">觀念說明：初始假設如何選</span><br>
+<ul>
+  <li>先看電源要把電流往哪個方向推。若電源會把電流由陽極推向陰極，先假設導通；反之先假設截止。</li>
+  <li>假設錯誤不會造成錯誤答案，只會在驗證步驟出現矛盾（例如求出負的 I<sub>D</sub>），此時換另一種假設即可。</li>
+  <li>假設截止時，二極體兩端電壓 V<sub>D</sub> 仍然存在，只是沒有電流。求 V<sub>D</sub> 的方法是把二極體當成開路，求開路兩端的電壓差（陽極電位減陰極電位）。</li>
+</ul></div>
+
+<div class="practice"><span class="tag">練習 3.1</span>
+<figure class="fig"><svg id="p31a" class="md"></svg><figcaption>練習 3.1(a) 的電路。</figcaption></figure><details class="q"><summary>(a) 將例題 3.1 的二極體反接（陰極朝向 V<sub>in</sub> 的正端），R = 2 kΩ。求 V<sub>in</sub> = +3 V 與 −3 V 時的二極體電流與電壓。</summary>
+<ol class="sol">
+  <li>V<sub>in</sub> = +3 V：電源將電流由陰極推向陽極，先假設截止。I<sub>D</sub> = 0，R 上無壓降，二極體兩端承受全部電源電壓，陽極電位比陰極低 3 V，V<sub>D</sub> = −3 V ≤ 0，假設成立。</li>
+  <li>V<sub>in</sub> = −3 V：電流方向改為由陽極流向陰極，假設導通。V<sub>D</sub> = 0，I<sub>D</sub> = 3 V / 2 kΩ = 1.5 mA &gt; 0，假設成立。</li>
+</ol></details>
+<figure class="fig"><svg id="p31b" class="md"></svg><figcaption>練習 3.1(b) 的電路。</figcaption></figure><details class="q"><summary>(b) V<sub>in</sub> 經 R = 1 kΩ 接到節點 X；理想二極體 D<sub>1</sub>（陽極在 X）由 X 接地；理想二極體 D<sub>2</sub>（陽極在 X）由 X 接到 +2 V 電池正端。求 V<sub>in</sub> = 5 V 時的 V<sub>X</sub> 與各電流。</summary>
+<ol class="sol">
+  <li>D<sub>1</sub> 與 D<sub>2</sub> 的陽極都在 X。D<sub>1</sub> 陰極在 0 V，D<sub>2</sub> 陰極在 2 V，X 升高時 D<sub>1</sub> 先導通。</li>
+  <li>假設 D<sub>1</sub> 導通、D<sub>2</sub> 截止：V<sub>X</sub> = 0。</li>
+  <li>驗證 D<sub>2</sub>：V<sub>D2</sub> = 0 − 2 = −2 V ≤ 0，截止成立。</li>
+  <li>I<sub>R</sub> = (5 − 0)/1 k = 5 mA，全部流入 D<sub>1</sub>，I<sub>D1</sub> = 5 mA &gt; 0，成立。</li>
+</ol></details>
+<details class="q"><summary>(c) 半波整流器輸入 V<sub>p</sub> = 10 V，求理想模型下的輸出峰值與平均值；改用定電壓模型（0.8 V）時峰值為何？</summary>
+<ol class="sol">
+  <li>理想模型：峰值 10 V，平均值 V<sub>p</sub>/π = 10/π ≈ 3.18 V。</li>
+  <li>定電壓模型：V<sub>in</sub> 必須超過 0.8 V 二極體才導通，輸出峰值 10 − 0.8 = 9.2 V。</li>
+</ol></details>
+</div>
+
+## 3.2 PN 接面作為二極體
+
+實際的 PN 接面遵循第 2 章的指數關係 <span class="m"><i>I</i><sub>D</sub> = <i>I</i><sub>S</sub>[exp(<i>V</i><sub>D</sub>/<i>V</i><sub>T</sub>) − 1]</span>，順偏時須約 0.6～0.8 V 才有可觀電流。依所需精確度，有三種常用模型：
+
+<figure class="fig"><svg id="f-models"></svg>
+  <figcaption>三種模型的 I/V 特性比較（I<sub>S</sub> = 2×10<sup>−16</sup> A，V<sub>D,on</sub> = 0.8 V）。指數曲線在電流 0.1～5 mA 範圍內，電壓只在約 0.70～0.80 V 之間變化，這是定電壓模型成立的依據。</figcaption>
+</figure>
+
+<div class="tbl"><table>
+  <tr><th>模型</th><th>導通時</th><th>截止時</th><th>適用情況</th></tr>
+  <tr><td>理想二極體</td><td>短路</td><td>開路</td><td>電路電壓遠大於 0.8 V，只需定性結果</td></tr>
+  <tr><td>定電壓模型（CVD）</td><td>電壓源 V<sub>D,on</sub></td><td>開路</td><td>大多數手算分析；本章主要使用</td></tr>
+  <tr><td>指數模型</td><td colspan="2">I<sub>D</sub> = I<sub>S</sub>[exp(V<sub>D</sub>/V<sub>T</sub>) − 1]，需迭代或數值求解</td><td>電源電壓接近 V<sub>D,on</sub>，或需要準確電流</td></tr>
+</table></div>
+
+<div class="box warn"><span class="tag">定電壓模型的判斷條件</span><br>
+在定電壓模型下，導通的條件改為「二極體兩端電壓會超過 V<sub>D,on</sub>」，截止的驗證改為 V<sub>D</sub> &lt; V<sub>D,on</sub>，而不是 V<sub>D</sub> &lt; 0。轉折點因此平移 V<sub>D,on</sub>。</div>
+
+<div class="box ex"><span class="tag">例題 3.2</span><br>
+V<sub>in</sub> 經 R<sub>1</sub> = 1 kΩ 接到節點 X，X 經 R<sub>2</sub> = 1 kΩ 接地，二極體 D（陽極在 X）也由 X 接地。以定電壓模型（0.8 V）求 V<sub>in</sub> = 1 V 與 3 V 時的 V<sub>X</sub>。<figure class="fig"><svg id="e32" class="md"></svg><figcaption>例題 3.2 的電路。</figcaption></figure>
+<ul>
+  <li>D 截止時 V<sub>X</sub> = V<sub>in</sub> R<sub>2</sub>/(R<sub>1</sub> + R<sub>2</sub>) = V<sub>in</sub>/2。D 導通的條件為 V<sub>in</sub>/2 &gt; 0.8 V，即 V<sub>in</sub> &gt; 1.6 V。</li>
+  <li>V<sub>in</sub> = 1 V：V<sub>X</sub> = 0.5 V &lt; 0.8 V，D 截止。</li>
+  <li>V<sub>in</sub> = 3 V：D 導通，V<sub>X</sub> = 0.8 V。驗證：I<sub>R1</sub> = (3 − 0.8)/1 k = 2.2 mA，I<sub>R2</sub> = 0.8 mA，I<sub>D</sub> = 1.4 mA &gt; 0，成立。</li>
+</ul></div>
+
+<div class="box note"><span class="tag">觀念說明：定電壓模型的等效電路</span><br>
+導通的二極體以一個 V<sub>D,on</sub> 的電壓源取代，正端在陽極。這個電壓源只能「吸收」順向電流，不能讓電流反向流動；若計算出反向電流，代表二極體實際上是截止的。因此 CVD 的二極體可理解為「理想二極體串聯一個 0.8 V 電池」。</div>
+
+<div class="practice"><span class="tag">練習 3.2</span>
+<figure class="fig"><svg id="p32a" class="md"></svg><figcaption>練習 3.2(a)(b)；(b) 將電源改為 1 V 的電路。</figcaption></figure><details class="q"><summary>(a) 2 V 電源經 R = 1 kΩ 驅動二極體（I<sub>S</sub> = 2×10<sup>−16</sup> A）。分別以定電壓模型與指數模型求電流。</summary>
+<ol class="sol">
+  <li>CVD：I = (2 − 0.8)/1 k = 1.2 mA。</li>
+  <li>指數模型迭代，以 1.2 mA 起算：V<sub>D</sub> = 0.026 ln(1.2×10<sup>−3</sup>/2×10<sup>−16</sup>) = 0.026 × 29.42 ≈ 0.765 V。</li>
+  <li>I = (2 − 0.765)/1 k = 1.235 mA → V<sub>D</sub> = 0.026 ln(6.18×10<sup>12</sup>) ≈ 0.766 V → I ≈ 1.234 mA，已收斂。</li>
+  <li>CVD 誤差約 3%。電源電壓為 V<sub>D,on</sub> 的 2.5 倍，CVD 已可接受。</li>
+</ol></details>
+<details class="q"><summary>(b) 同 (a) 但電源改為 1 V。CVD 的誤差變為多少？</summary>
+<ol class="sol">
+  <li>CVD：I = (1 − 0.8)/1 k = 0.2 mA。</li>
+  <li>指數模型：假設 V<sub>D</sub> = 0.73 V → I = 0.27 mA → V<sub>D</sub> = 0.026 ln(1.35×10<sup>12</sup>) ≈ 0.726 V → I = 0.274 mA → V<sub>D</sub> ≈ 0.727 V，收斂於 I ≈ 0.273 mA。</li>
+  <li>CVD 誤差約 27%。電源電壓接近 V<sub>D,on</sub> 時，V<sub>D</sub> 的小誤差佔 R 上電壓的比例很大，必須使用指數模型。</li>
+</ol></details>
+<figure class="fig"><svg id="p32c" class="md"></svg><figcaption>練習 3.2(c) 的電路。</figcaption></figure><details class="q"><summary>(c) 例題 3.2 改為 R<sub>1</sub> = 2 kΩ、R<sub>2</sub> = 1 kΩ。求二極體開始導通的 V<sub>in</sub>，以及 V<sub>in</sub> = 3 V 時的 I<sub>D</sub>。</summary>
+<ol class="sol">
+  <li>截止時 V<sub>X</sub> = V<sub>in</sub> × 1/(2 + 1) = V<sub>in</sub>/3。導通條件 V<sub>in</sub>/3 &gt; 0.8，即 V<sub>in</sub> &gt; 2.4 V。</li>
+  <li>V<sub>in</sub> = 3 V &gt; 2.4 V，D 導通，V<sub>X</sub> = 0.8 V。</li>
+  <li>I<sub>R1</sub> = (3 − 0.8)/2 k = 1.1 mA，I<sub>R2</sub> = 0.8/1 k = 0.8 mA。</li>
+  <li>KCL：I<sub>D</sub> = 1.1 − 0.8 = 0.3 mA &gt; 0，成立。</li>
+</ol></details>
+</div>
+
+## 3.3 其他例題：轉移特性
+
+電路的<b>輸入輸出特性（transfer characteristic）</b>是把 V<sub>out</sub> 畫成 V<sub>in</sub> 的函數。對含二極體的電路，作法是：找出二極體狀態改變的轉折點 V<sub>in</sub> 值，在轉折點兩側分別以對應的等效電路寫出 V<sub>out</sub>。轉移特性一旦確定，任何輸入波形的輸出都可以逐點對照得到。
+
+<div class="box"><span class="tag">繪製轉移特性的步驟</span>
+<ol>
+  <li>令 V<sub>in</sub> 為很負的值，判斷每個二極體的狀態，寫出 V<sub>out</sub> 的表示式。</li>
+  <li>逐漸增加 V<sub>in</sub>，找出某個二極體兩端電壓恰好等於 V<sub>D,on</sub>（CVD）或 0（理想）的時刻，該 V<sub>in</sub> 即為轉折點。</li>
+  <li>在轉折點以上，以新的狀態重新寫出 V<sub>out</sub>。</li>
+  <li>重複直到 V<sub>in</sub> 很正。在轉折點處，兩側的 V<sub>out</sub> 表示式必須相等（曲線連續），可用來檢查計算。</li>
+</ol></div>
+
+<div class="grid2">
+  <figure class="fig"><svg id="f-tcA" class="md"></svg>
+    <figcaption>電路 A：二極體與電池 V<sub>B</sub> 串聯後並接於輸出端（並聯型）。</figcaption></figure>
+  <figure class="fig"><svg id="f-tcB" class="md"></svg>
+    <figcaption>電路 B：二極體串聯於訊號路徑，輸出取自 R 上的電壓（串聯型）。</figcaption></figure>
+</div>
+
+<figure class="fig">
+  <div class="ctrl">
+    <span class="seg" id="tcC"><button type="button" data-v="A" class="on">電路 A</button><button type="button" data-v="B">電路 B</button></span>
+    <span class="seg" id="tcM"><button type="button" data-v="ideal">理想</button><button type="button" data-v="cvd" class="on">定電壓</button><button type="button" data-v="exp">指數</button></span>
+    <label>V<sub>B</sub>（僅電路 A）<input type="range" id="tcVB" min="0" max="2" step="0.05" value="1"></label><output id="tcVBo"></output>
+  </div>
+  <div class="readout" id="tcR"></div>
+  <svg id="f-tc"></svg>
+  <figcaption>轉移特性（R = 1 kΩ，指數模型 I<sub>S</sub> = 2×10<sup>−16</sup> A）。虛線為 V<sub>out</sub> = V<sub>in</sub>。指數模型在轉折點附近為平滑曲線，定電壓模型以折線近似之。</figcaption>
+</figure>
+
+<div class="tbl"><table>
+  <tr><th></th><th>電路 A（並聯型，CVD）</th><th>電路 B（串聯型，CVD）</th></tr>
+  <tr><td>轉折點</td><td>V<sub>in</sub> = V<sub>B</sub> + V<sub>D,on</sub></td><td>V<sub>in</sub> = V<sub>D,on</sub></td></tr>
+  <tr><td>轉折點以下</td><td>D 截止，V<sub>out</sub> = V<sub>in</sub>（斜率 1）</td><td>D 截止，V<sub>out</sub> = 0</td></tr>
+  <tr><td>轉折點以上</td><td>D 導通，V<sub>out</sub> = V<sub>B</sub> + V<sub>D,on</sub>（斜率 0）</td><td>D 導通，V<sub>out</sub> = V<sub>in</sub> − V<sub>D,on</sub>（斜率 1）</td></tr>
+</table></div>
+
+<div class="box ex"><span class="tag">例題 3.3：二極體與電阻並聯</span><br>
+V<sub>in</sub> 經 R<sub>1</sub> 接到輸出，輸出端對地接 R<sub>2</sub>，且另有 D（陽極在輸出）串聯 V<sub>B</sub> 對地。CVD 下：<figure class="fig"><svg id="e33" class="md"></svg><figcaption>例題 3.3 的電路。</figcaption></figure>
+<ul>
+  <li>D 截止：V<sub>out</sub> = V<sub>in</sub> R<sub>2</sub>/(R<sub>1</sub> + R<sub>2</sub>)，斜率為分壓比。</li>
+  <li>轉折點：V<sub>out</sub> = V<sub>B</sub> + V<sub>D,on</sub>，對應 V<sub>in</sub> = (V<sub>B</sub> + V<sub>D,on</sub>)(1 + R<sub>1</sub>/R<sub>2</sub>)。</li>
+  <li>D 導通：V<sub>out</sub> 固定於 V<sub>B</sub> + V<sub>D,on</sub>，斜率為 0。</li>
+</ul>
+定電壓模型下，導通的二極體使該節點電壓固定，因此導通後的斜率由「節點是否被電壓源固定」決定，與 R<sub>2</sub> 無關。</div>
+
+<div class="box note"><span class="tag">I/V 特性的另一種用法</span><br>
+除 V<sub>out</sub>(V<sub>in</sub>) 外，也常需要電路從輸入端看進去的 I<sub>in</sub>(V<sub>in</sub>) 特性。作法相同：在轉折點兩側分別求 I<sub>in</sub>。例如電路 A 中，D 截止時 I<sub>in</sub> = 0（輸出未接負載），D 導通後 I<sub>in</sub> = (V<sub>in</sub> − V<sub>B</sub> − V<sub>D,on</sub>)/R，斜率 1/R。</div>
+
+<div class="practice"><span class="tag">練習 3.3</span>
+<details class="q"><summary>(a) 電路 A，V<sub>B</sub> = 1.2 V，CVD。求轉折點，以及 V<sub>in</sub> = −1 V、3 V 時的 V<sub>out</sub>。</summary>
+<ol class="sol">
+  <li>轉折點：V<sub>out</sub> 到達 V<sub>B</sub> + V<sub>D,on</sub> = 2.0 V 時 D 開始導通，此時 R 上無電流，V<sub>in</sub> = 2.0 V。</li>
+  <li>V<sub>in</sub> = −1 V &lt; 2.0 V：D 截止，R 無電流，V<sub>out</sub> = V<sub>in</sub> = −1 V。</li>
+  <li>V<sub>in</sub> = 3 V &gt; 2.0 V：D 導通，V<sub>out</sub> = 2.0 V，R 上電流 (3 − 2)/1 k = 1 mA 流入 D。</li>
+</ol></details>
+<details class="q"><summary>(b) 電路 B，R = 1 kΩ，CVD。求 V<sub>in</sub> = 0.5 V 與 2.5 V 時的 V<sub>out</sub> 與電流。</summary>
+<ol class="sol">
+  <li>V<sub>in</sub> = 0.5 V &lt; 0.8 V：D 截止，I = 0，V<sub>out</sub> = I·R = 0。驗證 V<sub>D</sub> = 0.5 V &lt; 0.8 V。</li>
+  <li>V<sub>in</sub> = 2.5 V：D 導通，V<sub>out</sub> = 2.5 − 0.8 = 1.7 V，I = 1.7 mA。</li>
+</ol></details>
+<figure class="fig"><svg id="p33c" class="md"></svg><figcaption>練習 3.3(c) 的電路。</figcaption></figure><details class="q"><summary>(c) 例題 3.3 中取 R<sub>1</sub> = R<sub>2</sub> = 1 kΩ、V<sub>B</sub> = 0.2 V。畫出轉移特性的轉折點與各段斜率，並求 V<sub>in</sub> = 1 V、4 V 的輸出。</summary>
+<ol class="sol">
+  <li>D 截止：V<sub>out</sub> = V<sub>in</sub>/2，斜率 0.5。</li>
+  <li>D 導通條件 V<sub>out</sub> &gt; 0.2 + 0.8 = 1.0 V，對應 V<sub>in</sub> = 2.0 V。</li>
+  <li>V<sub>in</sub> &gt; 2.0 V：V<sub>out</sub> = 1.0 V，斜率 0。</li>
+  <li>V<sub>in</sub> = 1 V → 0.5 V；V<sub>in</sub> = 4 V → 1.0 V（I<sub>R1</sub> = 3 mA，I<sub>R2</sub> = 1 mA，I<sub>D</sub> = 2 mA）。</li>
+</ol></details>
+</div>
+
+## 3.4 大信號與小信號操作
+
+至此的分析都屬於<b>大信號（large-signal）</b>操作：輸入變化大到使二極體在導通與截止之間切換，必須使用非線性模型。另一類常見情況是二極體已偏壓在某一直流電流 I<sub>D</sub>，再疊加一個很小的變化量。此時只需關心工作點附近的局部行為，可以用線性的<b>小信號（small-signal）</b>模型處理。
+
+### 1　小信號電阻 r<sub>d</sub>
+
+在工作點 (V<sub>D1</sub>, I<sub>D1</sub>) 附近，以指數曲線的切線近似：
+
+<div class="eq"><span class="frac"><span>d<i>I</i><sub>D</sub></span><span>d<i>V</i><sub>D</sub></span></span> = <span class="frac"><span><i>I</i><sub>S</sub></span><span><i>V</i><sub>T</sub></span></span> exp<span class="frac"><span><i>V</i><sub>D1</sub></span><span><i>V</i><sub>T</sub></span></span> = <span class="frac"><span><i>I</i><sub>D1</sub></span><span><i>V</i><sub>T</sub></span></span></div>
+
+<div class="eq key"><i>r</i><sub>d</sub> = <span class="frac"><span><i>V</i><sub>T</sub></span><span><i>I</i><sub>D</sub></span></span> &nbsp;&nbsp;&nbsp;&nbsp; Δ<i>I</i><sub>D</sub> = <span class="frac"><span>Δ<i>V</i><sub>D</sub></span><span><i>r</i><sub>d</sub></span></span><span class="cm">I<sub>D</sub> = 1 mA 時 r<sub>d</sub> = 26 Ω</span></div>
+
+r<sub>d</sub> 與偏壓電流成反比：偏壓電流越大，切線越陡，小信號電阻越小。r<sub>d</sub> 與 I<sub>S</sub>（面積）無關。
+
+<figure class="fig">
+  <div class="ctrl">
+    <label>I<sub>D1</sub> <input type="range" id="ssI" min="-1" max="1" step="0.02" value="0"></label><output id="ssIo"></output>
+    <label>ΔV<sub>D</sub> <input type="range" id="ssV" min="1" max="40" step="1" value="10"></label><output id="ssVo"></output>
+  </div>
+  <div class="readout" id="ssR"></div>
+  <svg id="f-ss"></svg>
+  <figcaption>工作點附近的指數曲線（實線）與切線（虛線）。ΔV<sub>D</sub> 越小，切線估計的 ΔI<sub>D</sub> 與實際值越接近；ΔV<sub>D</sub> 約小於 V<sub>T</sub>/5 時誤差在 10% 以內。</figcaption>
+</figure>
+
+### 2　小信號近似的成立條件
+
+精確的電流變化為 <span class="m">Δ<i>I</i><sub>D</sub> = <i>I</i><sub>D1</sub>[exp(Δ<i>V</i><sub>D</sub>/<i>V</i><sub>T</sub>) − 1]</span>。將指數展開：
+
+<div class="eq">Δ<i>I</i><sub>D</sub> = <i>I</i><sub>D1</sub> <span class="pr">(</span><span class="frac"><span>Δ<i>V</i><sub>D</sub></span><span><i>V</i><sub>T</sub></span></span> + <span class="frac"><span>1</span><span>2</span></span><span class="pr">(</span><span class="frac"><span>Δ<i>V</i><sub>D</sub></span><span><i>V</i><sub>T</sub></span></span><span class="pr">)</span><sup>2</sup> + ⋯<span class="pr">)</span></div>
+
+只保留第一項即為小信號模型，條件為 <span class="m">|Δ<i>V</i><sub>D</sub>| ≪ <i>V</i><sub>T</sub></span>。相對誤差約為 Δ<i>V</i><sub>D</sub>/(2<i>V</i><sub>T</sub>)。
+
+### 3　分析步驟
+
+<div class="box"><span class="tag">直流與小信號分開求解</span>
+<ol>
+  <li><b>直流分析</b>：只保留直流源，以 CVD 或指數模型求出偏壓電流 I<sub>D</sub>。</li>
+  <li>計算 r<sub>d</sub> = V<sub>T</sub>/I<sub>D</sub>。</li>
+  <li><b>小信號分析</b>：直流電壓源短路接地、直流電流源開路，二極體以 r<sub>d</sub> 取代，求出小信號輸出。</li>
+  <li>總輸出 = 直流輸出 + 小信號輸出。</li>
+</ol></div>
+
+<div class="box ex"><span class="tag">例題 3.4</span><br><figure class="fig"><svg id="e34" class="md"></svg><figcaption>例題 3.4：二極體偏壓於直流電壓 V<sub>D1</sub>，再疊加小變化 ΔV<sub>D</sub>。</figcaption></figure>
+二極體偏壓於 I<sub>D</sub> = 1 mA，兩端電壓變化 ΔV<sub>D</sub> = 10 mV。小信號模型給出 ΔI<sub>D</sub> = 10 mV / 26 Ω = 0.385 mA；精確值為 1 mA × [exp(10/26) − 1] = 0.469 mA，誤差約 18%。若 ΔV<sub>D</sub> = 2 mV，小信號 2/26 = 0.0769 mA，精確 1 × [exp(2/26) − 1] = 0.0800 mA，誤差約 4%。</div>
+
+<div class="box note"><span class="tag">觀念說明：為什麼要分成「直流」與「小信號」</span><br>
+二極體的 I/V 是曲線，曲線上不同位置的斜率不同。直流分析決定「站在曲線上的哪一點」，小信號分析則只看「在這一點附近稍微移動時，電流跟著變多少」。只要移動量很小，曲線在這一小段內幾乎是直線，就能用電阻 r<sub>d</sub> 代表，於是可以使用分壓、KCL 等線性電路的工具。若移動量大到跨越曲線上明顯彎曲的部分，這個近似就失效，必須回到指數模型。</div>
+
+<div class="practice"><span class="tag">練習 3.4</span>
+<details class="q"><summary>(a) 二極體偏壓於 0.5 mA，求 r<sub>d</sub>。若偏壓電流加倍，r<sub>d</sub> 如何變化？</summary>
+<ol class="sol">
+  <li>r<sub>d</sub> = V<sub>T</sub>/I<sub>D</sub> = 26 mV / 0.5 mA = 52 Ω。</li>
+  <li>r<sub>d</sub> 與 I<sub>D</sub> 成反比，電流加倍為 1 mA 時 r<sub>d</sub> = 26 Ω，減半。</li>
+</ol></details>
+<details class="q"><summary>(b) 二極體偏壓於 2 mA，兩端電壓增加 3 mV，以小信號模型估計電流變化，並與精確值比較。</summary>
+<ol class="sol">
+  <li>r<sub>d</sub> = 26/2 = 13 Ω。</li>
+  <li>小信號：ΔI = 3 mV / 13 Ω ≈ 0.231 mA。</li>
+  <li>精確：ΔI = 2 mA × [exp(3/26) − 1] = 2 × 0.1223 ≈ 0.245 mA。</li>
+  <li>誤差約 6%，與估計式 ΔV/(2V<sub>T</sub>) = 3/52 ≈ 5.8% 一致。</li>
+</ol></details>
+<figure class="fig"><svg id="p34c" class="md"></svg><figcaption>練習 3.4(c) 的電路。</figcaption></figure><details class="q"><summary>(c) 1 V 直流源經 R = 1 kΩ 驅動一顆二極體，直流電流為 0.25 mA。若電源疊加 ±20 mV 的小訊號，二極體兩端的電壓變化為多少？</summary>
+<ol class="sol">
+  <li>r<sub>d</sub> = 26 mV / 0.25 mA = 104 Ω。</li>
+  <li>小信號等效電路：訊號源 → R → r<sub>d</sub> → 地，為分壓電路。</li>
+  <li>Δv<sub>D</sub> = ±20 mV × 104/(1000 + 104) ≈ ±1.9 mV。</li>
+  <li>檢查：1.9 mV ≪ 26 mV，小信號近似成立。</li>
+</ol></details>
+</div>
+
+## 3.5 二極體的應用
+
+### 1　半波與全波整流
+
+<h4>(a) 加上電容：峰值偵測器（peak detector）</h4>
+
+在半波整流器的輸出端並聯電容 C。V<sub>in</sub> 上升時 D 導通，C 被充電至輸入峰值；V<sub>in</sub> 下降後 V<sub>in</sub> &lt; V<sub>out</sub> + V<sub>D,on</sub>，D 截止，C 無放電路徑（無負載時），V<sub>out</sub> 保持在峰值。這個電路稱為峰值偵測器。
+
+接上負載 R<sub>L</sub> 後，D 截止期間 C 經由 R<sub>L</sub> 放電，V<sub>out</sub> 以時間常數 R<sub>L</sub>C 指數下降，直到下一週期 V<sub>in</sub> 再度超過 V<sub>out</sub> + V<sub>D,on</sub>。輸出因此呈鋸齒狀，峰對峰變化量稱為<b>漣波（ripple）</b>V<sub>R</sub>。
+
+<div class="grid2">
+  <figure class="fig"><svg id="f-pk" class="md"></svg>
+    <figcaption>含電容 C 與負載 R<sub>L</sub> 的半波整流器。</figcaption></figure>
+  <figure class="fig"><svg id="f-bridge" class="md"></svg>
+    <figcaption>全波橋式整流器。V<sub>in</sub> &gt; 0 時 D<sub>1</sub>、D<sub>4</sub> 導通；V<sub>in</sub> &lt; 0 時 D<sub>2</sub>、D<sub>3</sub> 導通。兩種情況下負載電流方向相同。</figcaption></figure>
+</div>
+
+<div class="box note"><span class="tag">觀念說明：一個週期內發生的事（含 R<sub>L</sub>）</span>
+<ol>
+  <li><b>充電</b>：V<sub>in</sub> 接近峰值、且 V<sub>in</sub> − V<sub>D,on</sub> 高於電容電壓時，D 導通。電源同時供應負載電流並把 C 充到 V<sub>in,p</sub> − V<sub>D,on</sub>。</li>
+  <li><b>D 截止</b>：V<sub>in</sub> 越過峰值開始下降，V<sub>in</sub> − V<sub>D,on</sub> 低於電容電壓，D 逆偏而截止。輸入端與輸出端此後互不相連。</li>
+  <li><b>放電</b>：負載電流全部由 C 提供，V<sub>out</sub> 逐漸下降。此時 V<sub>in</sub> 的負半週對輸出沒有影響。</li>
+  <li><b>再次充電</b>：下一個週期 V<sub>in</sub> 上升到超過 V<sub>out</sub> + V<sub>D,on</sub> 時，D 再度導通，回到步驟 1。</li>
+</ol>
+電容的角色是「蓄水池」：二極體在短時間內補充電荷，電容在其餘時間持續供應負載。</div>
+
+<h4>(b) 漣波電壓</h4>
+
+若 R<sub>L</sub>C 遠大於輸入週期 T<sub>in</sub>，放電近似線性，且放電時間近似一整個週期。放電電流約為 V<sub>p</sub>/R<sub>L</sub>，因此：
+
+<div class="eq key"><i>V</i><sub>R</sub> ≈ <span class="frac"><span><i>V</i><sub>p</sub></span><span><i>R</i><sub>L</sub></span></span> · <span class="frac"><span><i>T</i><sub>in</sub></span><span><i>C</i></span></span> = <span class="frac"><span><i>V</i><sub>p</sub></span><span><i>R</i><sub>L</sub><i>C f</i><sub>in</sub></span></span><span class="cm">V<sub>p</sub> 為輸出峰值（CVD 下為 V<sub>in,p</sub> − V<sub>D,on</sub>）</span></div>
+
+等價的說法：漣波 = 負載電流 × 放電時間 / 電容，即 <span class="m"><i>V</i><sub>R</sub> ≈ <i>I</i><sub>L</sub><i>T</i><sub>in</sub>/<i>C</i></span>。增大 C 可降低漣波，代價是電容體積與後述的峰值電流。
+
+<h4>(c) 導通角與二極體峰值電流</h4>
+
+D 只在每週期靠近峰值的短時間 Δt 內導通，在此期間補足一整個週期流失的電荷。由 <span class="m"><i>V</i><sub>p</sub> cos(ωΔ<i>t</i>) = <i>V</i><sub>p</sub> − <i>V</i><sub>R</sub></span> 及小角度近似：
+
+<div class="eq"><i>ω</i>Δ<i>t</i> ≈ <span class="rad">√</span><span class="frac"><span>2<i>V</i><sub>R</sub></span><span><i>V</i><sub>p</sub></span></span> &nbsp;&nbsp;&nbsp;&nbsp; <i>I</i><sub>p</sub> ≈ <i>C</i>ω<i>V</i><sub>p</sub><span class="rad">√</span><span class="frac"><span>2<i>V</i><sub>R</sub></span><span><i>V</i><sub>p</sub></span></span> + <span class="frac"><span><i>V</i><sub>p</sub></span><span><i>R</i><sub>L</sub></span></span></div>
+
+I<sub>p</sub> 的第一項是電容的充電電流 C dV<sub>in</sub>/dt 在導通區間開始時的值，第二項是負載電流。漣波越小，導通區間越短，二極體必須在更短時間內提供相同電荷，峰值電流因此越大。
+
+<h4>(d) 互動：整流器波形</h4>
+
+<figure class="fig">
+  <div class="ctrl">
+    <span class="seg" id="rcT"><button type="button" data-v="half" class="on">半波</button><button type="button" data-v="full">全波（橋式）</button></span>
+    <label>V<sub>in,p</sub> <input type="range" id="rcV" min="2" max="12" step="0.1" value="5"></label><output id="rcVo"></output>
+  </div>
+  <div class="ctrl">
+    <label>C <input type="range" id="rcC" min="1" max="3.5" step="0.02" value="2.85"></label><output id="rcCo"></output>
+    <label>R<sub>L</sub> <input type="range" id="rcRL" min="2" max="4" step="0.02" value="3"></label><output id="rcRLo"></output>
+  </div>
+  <div class="readout" id="rcR"></div>
+  <svg id="f-rc"></svg>
+  <figcaption>f<sub>in</sub> = 60 Hz，定電壓模型 V<sub>D,on</sub> = 0.8 V（橋式整流的導通路徑含兩顆二極體，壓降 1.6 V）。灰線為 V<sub>in</sub>（全波時畫 |V<sub>in</sub>|），藍線為 V<sub>out</sub>，色塊標示二極體導通區間。R<sub>L</sub>C 與週期接近時，線性放電的近似誤差變大，公式值與模擬值出現差距。</figcaption>
+</figure>
+
+<h4>(e) 峰值逆向電壓（PIV）</h4>
+
+二極體截止時承受的最大逆向電壓須低於其崩潰電壓。
+
+<div class="tbl"><table>
+  <tr><th>電路</th><th>最嚴重時刻</th><th>PIV（CVD）</th></tr>
+  <tr><td>半波，無電容</td><td>V<sub>in</sub> = −V<sub>p</sub>，V<sub>out</sub> = 0</td><td>V<sub>p</sub></td></tr>
+  <tr><td>半波，含電容</td><td>V<sub>in</sub> = −V<sub>p</sub>，V<sub>out</sub> ≈ V<sub>p</sub> − V<sub>D,on</sub></td><td>2V<sub>p</sub> − V<sub>D,on</sub></td></tr>
+  <tr><td>全波橋式</td><td>截止的一對二極體各承受約輸出電壓加一個導通壓降</td><td>V<sub>p</sub> − V<sub>D,on</sub></td></tr>
+</table></div>
+
+<h4>(f) 全波整流的比較</h4>
+
+<ul>
+  <li>輸出在每半週都被補充一次，放電時間減半，<span class="m"><i>V</i><sub>R</sub> ≈ <i>V</i><sub>p</sub>/(2<i>R</i><sub>L</sub><i>C f</i><sub>in</sub>)</span>。相同漣波下電容可減半。</li>
+  <li>代價是導通路徑上有兩顆二極體，輸出峰值為 V<sub>in,p</sub> − 2V<sub>D,on</sub>，在低壓電源中這 1.6 V 的損失比例很大。</li>
+  <li>橋式電路的負載兩端都不接地（相對於輸入源），使用時需注意參考點。</li>
+</ul>
+
+<div class="box ex"><span class="tag">例題 3.5：電容設計</span><br>
+V<sub>in,p</sub> = 5 V、f<sub>in</sub> = 60 Hz、R<sub>L</sub> = 1 kΩ，要求 V<sub>R</sub> ≤ 0.1 V。<figure class="fig"><svg id="e35" class=""></svg><figcaption>例題 3.5 的輸出波形示意（漣波經放大以便辨識）。V<sub>out</sub> 在色塊區間（Δt）由二極體充電，其餘時間經 R<sub>L</sub> 放電；峰對峰變化即 V<sub>R</sub>。</figcaption></figure>
+<ul>
+  <li>半波：V<sub>p</sub> = 4.2 V，C ≥ 4.2 / (1 kΩ × 60 × 0.1) = 700 µF。ωΔt ≈ √(0.2/4.2) = 0.218 rad，Δt ≈ 0.58 ms。I<sub>p</sub> ≈ 700 µF × 377 × 4.2 × 0.218 + 4.2 mA ≈ 0.246 A。PIV ≈ 9.2 V。</li>
+  <li>全波橋式：V<sub>p</sub> = 3.4 V，C ≥ 3.4 / (1 kΩ × 120 × 0.1) ≈ 283 µF。PIV ≈ 4.2 V。</li>
+</ul>
+負載平均電流僅約 4 mA，二極體峰值電流卻約為其 60 倍，二極體的電流額定值須依峰值選擇。</div>
+
+<div class="practice"><span class="tag">練習 3.5A（整流）</span>
+<details class="q"><summary>(a) 半波整流，V<sub>in,p</sub> = 12 V，f<sub>in</sub> = 60 Hz，R<sub>L</sub> = 200 Ω，要求 V<sub>R</sub> ≤ 0.5 V。求最小 C。</summary>
+<ol class="sol">
+  <li>輸出峰值 V<sub>p</sub> = 12 − 0.8 = 11.2 V。</li>
+  <li>由 V<sub>R</sub> = V<sub>p</sub>/(R<sub>L</sub>C f<sub>in</sub>) 解出 C = V<sub>p</sub>/(R<sub>L</sub> f<sub>in</sub> V<sub>R</sub>) = 11.2/(200 × 60 × 0.5) ≈ 1.87 mF。</li>
+</ol></details>
+<details class="q"><summary>(b) 承 (a)，求導通時間 Δt 與二極體峰值電流。</summary>
+<ol class="sol">
+  <li>ωΔt ≈ √(2V<sub>R</sub>/V<sub>p</sub>) = √(1/11.2) ≈ 0.299 rad。</li>
+  <li>ω = 2π × 60 ≈ 377 rad/s，Δt ≈ 0.299/377 ≈ 0.79 ms（週期 16.7 ms 中只導通約 5%）。</li>
+  <li>I<sub>p</sub> ≈ CωV<sub>p</sub> × 0.299 + V<sub>p</sub>/R<sub>L</sub> = 1.87×10<sup>−3</sup> × 377 × 11.2 × 0.299 + 11.2/200 ≈ 2.36 + 0.056 ≈ 2.4 A。</li>
+  <li>平均負載電流約 56 mA，峰值電流約為其 43 倍。</li>
+</ol></details>
+<details class="q"><summary>(c) 承 (a) 改用橋式全波整流，最小 C 為何？PIV 為何？</summary>
+<ol class="sol">
+  <li>輸出峰值 V<sub>p</sub> = 12 − 1.6 = 10.4 V。</li>
+  <li>放電間隔減半：C = V<sub>p</sub>/(2R<sub>L</sub> f<sub>in</sub> V<sub>R</sub>) = 10.4/(2 × 200 × 60 × 0.5) ≈ 867 µF。</li>
+  <li>PIV ≈ V<sub>in,p</sub> − V<sub>D,on</sub> = 11.2 V；半波含電容時則為 2 × 12 − 0.8 = 23.2 V。</li>
+</ol></details>
+<details class="q"><summary>(d) 觀念題：若把 R<sub>L</sub> 拿掉（無負載），含電容的半波整流器輸出為何？漣波為何？</summary>
+<ol class="sol">
+  <li>無負載時電容沒有放電路徑，第一個峰值後 V<sub>out</sub> 保持在 V<sub>in,p</sub> − V<sub>D,on</sub>。</li>
+  <li>漣波為 0，對應公式中 R<sub>L</sub> → ∞。此即峰值偵測器。</li>
+</ol></details>
+</div>
+
+### 2　穩壓（Voltage Regulation）
+
+整流器的輸出含漣波，且隨負載電流變化。<b>穩壓器</b>的目的是使輸出對輸入變化與負載變化都不敏感。利用二極體「電流變化大、電壓變化小」的特性，可構成簡單的穩壓器：電源經電阻 R 供應數個串聯的順偏二極體，輸出取自二極體串兩端。
+
+<div class="grid2">
+  <figure class="fig"><svg id="f-reg" class="md"></svg>
+    <figcaption>三顆二極體串聯的穩壓器。輸出約為 3V<sub>D</sub>。</figcaption></figure>
+  <figure class="fig"><svg id="f-regss" class="md"></svg>
+    <figcaption>小信號等效電路：每顆二極體以 r<sub>d</sub> 取代，直流源不出現。輸入變化經 R 與 3r<sub>d</sub> 分壓。</figcaption></figure>
+</div>
+
+<div class="eq key"><span class="frac"><span>Δ<i>V</i><sub>out</sub></span><span>Δ<i>V</i><sub>in</sub></span></span> = <span class="frac"><span>3<i>r</i><sub>d</sub></span><span><i>R</i> + 3<i>r</i><sub>d</sub></span></span> &nbsp;&nbsp;&nbsp;&nbsp; Δ<i>V</i><sub>out</sub> = −Δ<i>I</i><sub>L</sub> · (3<i>r</i><sub>d</sub> ∥ <i>R</i>)</div>
+
+<div class="box ex"><span class="tag">例題 3.6</span><br>
+V<sub>in</sub> = 5 V 含 ±0.1 V 漣波，R = 1 kΩ，三顆二極體 I<sub>S</sub> = 5×10<sup>−16</sup> A。<figure class="fig"><svg id="e36" class="md"></svg><figcaption>例題 3.6 的電路。</figcaption></figure>
+<ol>
+  <li>直流（迭代）：假設 V<sub>D</sub> = 0.75 V → I = (5 − 2.25)/1 k = 2.75 mA → V<sub>D</sub> = V<sub>T</sub> ln(2.75 mA/I<sub>S</sub>) = 0.763 V → I = 2.71 mA → V<sub>D</sub> = 0.762 V，收斂。V<sub>out</sub> ≈ 2.29 V，I<sub>D</sub> ≈ 2.71 mA。</li>
+  <li>r<sub>d</sub> = 26 mV / 2.71 mA ≈ 9.6 Ω，3r<sub>d</sub> ≈ 28.8 Ω。</li>
+  <li>輸出漣波：±0.1 V × 28.8/(1000 + 28.8) ≈ ±2.8 mV，衰減約 36 倍。</li>
+  <li>若負載自輸出抽取 0.5 mA：ΔV<sub>out</sub> ≈ −0.5 mA × (28.8 ∥ 1000 Ω) ≈ −14 mV。此時 I<sub>D</sub> 降為約 2.2 mA，ΔI<sub>L</sub> 相對 I<sub>D</sub> 不算很小，小信號結果只是估計值。</li>
+</ol>
+降低 3r<sub>d</sub>/R 可改善穩壓，但增加偏壓電流會提高功耗。輸出電壓只能是 V<sub>D,on</sub> 的整數倍左右，需要其他電壓時改用齊納二極體（崩潰區的電壓近似固定）。</div>
+
+<div class="box note"><span class="tag">觀念說明：為什麼二極體能穩壓</span><br>
+電阻 R 的 I/V 為直線：電壓變 10%，電流也變 10%。二極體則相反：電流變 10%，電壓只變 V<sub>T</sub> ln 1.1 ≈ 2.5 mV。輸入電壓的變化大部分落在 R 上（改變了電流），而二極體串兩端的電壓幾乎不動。小信號模型把這件事量化為 R 與 nr<sub>d</sub> 的分壓：r<sub>d</sub> 很小，分到的比例就很小。</div>
+
+<div class="practice"><span class="tag">練習 3.5B（穩壓）</span>
+<figure class="fig"><svg id="p5b" class="md"></svg><figcaption>練習 3.5B 的電路。</figcaption></figure><details class="q"><summary>(a) V<sub>in</sub> = 3 V 含 ±0.2 V 漣波，R = 500 Ω，兩顆二極體串聯。以 CVD 求直流電流，再求輸出漣波。</summary>
+<ol class="sol">
+  <li>直流：I<sub>D</sub> ≈ (3 − 2 × 0.8)/500 = 2.8 mA。</li>
+  <li>r<sub>d</sub> = 26/2.8 ≈ 9.3 Ω，2r<sub>d</sub> ≈ 18.6 Ω。</li>
+  <li>小信號電路：漣波源 → R → 2r<sub>d</sub> → 地。ΔV<sub>out</sub> = ±0.2 × 18.6/(500 + 18.6) ≈ ±7.2 mV。</li>
+</ol></details>
+<details class="q"><summary>(b) 承 (a)，若要求輸出漣波降為一半，R 與偏壓電流應如何調整（V<sub>in</sub> 不變）？</summary>
+<ol class="sol">
+  <li>輸出漣波 ≈ ΔV<sub>in</sub> × 2r<sub>d</sub>/R（R ≫ 2r<sub>d</sub>）。</li>
+  <li>r<sub>d</sub> = V<sub>T</sub>/I<sub>D</sub>，而 I<sub>D</sub> ≈ (V<sub>in</sub> − 1.6)/R，因此 2r<sub>d</sub>/R ≈ 2V<sub>T</sub>/(V<sub>in</sub> − 1.6)，與 R 無關。</li>
+  <li>結論：在 V<sub>in</sub> 固定時，單純改 R 幾乎不改善漣波抑制比；需要提高 V<sub>in</sub> − nV<sub>D,on</sub>，或改用其他穩壓架構。</li>
+</ol></details>
+</div>
+
+### 3　限幅電路（Limiting Circuits）
+
+限幅器（limiter）在輸入位於某範圍內時使輸出等於輸入（斜率 1），超出範圍時使輸出固定於上限或下限。用途包括保護後級電路的輸入端，避免過大電壓造成損壞。3.3 節的電路 A 就是單邊限幅器；加入第二個反向的二極體與電池即構成雙邊限幅器。
+
+<figure class="fig"><svg id="f-lim" class="md"></svg>
+  <figcaption>雙邊限幅器。D<sub>1</sub> 在 V<sub>out</sub> &gt; V<sub>B1</sub> + V<sub>D,on</sub> 時導通，D<sub>2</sub> 在 V<sub>out</sub> &lt; −(V<sub>B2</sub> + V<sub>D,on</sub>) 時導通。</figcaption></figure>
+
+<figure class="fig">
+  <div class="ctrl">
+    <label>V<sub>in,p</sub> <input type="range" id="lmA" min="0.5" max="5" step="0.1" value="3"></label><output id="lmAo"></output>
+    <label>V<sub>B1</sub> <input type="range" id="lmB1" min="0" max="3" step="0.05" value="1"></label><output id="lmB1o"></output>
+    <label>V<sub>B2</sub> <input type="range" id="lmB2" min="0" max="3" step="0.05" value="0.5"></label><output id="lmB2o"></output>
+  </div>
+  <div class="readout" id="lmR"></div>
+  <div class="grid2"><svg id="f-limtc"></svg><svg id="f-limw"></svg></div>
+  <figcaption>左：轉移特性。右：正弦輸入（灰）與輸出（藍）。定電壓模型 V<sub>D,on</sub> = 0.8 V。輸入幅度小於兩個轉折點時，輸出與輸入相同，限幅器不影響訊號。</figcaption>
+</figure>
+
+<div class="box warn"><span class="tag">注意</span><br>
+實際二極體以指數模型描述時，轉折點附近並非銳利折角，輸出在接近限幅值前就開始被壓縮。若要求限幅器對範圍內的訊號完全不產生失真，輸入幅度需與轉折點保持數個 V<sub>T</sub> 以上的距離。</div>
+
+<div class="practice"><span class="tag">練習 3.5C（限幅）</span>
+<figure class="fig"><svg id="p5c" class="md"></svg><figcaption>練習 3.5C 的電路。</figcaption></figure><details class="q"><summary>(a) 設計雙邊限幅器，使輸出限制在 −1.5 V 到 +2 V（V<sub>D,on</sub> = 0.8 V）。求 V<sub>B1</sub>、V<sub>B2</sub>。</summary>
+<ol class="sol">
+  <li>上限 V<sub>B1</sub> + 0.8 = 2 → V<sub>B1</sub> = 1.2 V。</li>
+  <li>下限 −(V<sub>B2</sub> + 0.8) = −1.5 → V<sub>B2</sub> = 0.7 V。</li>
+</ol></details>
+<details class="q"><summary>(b) 承 (a)，輸入 V<sub>in</sub> = 3 sin ωt，畫出輸出波形的特徵值；V<sub>in</sub> = 1 V 時 R 上的電流為何？</summary>
+<ol class="sol">
+  <li>輸出在 V<sub>in</sub> &gt; 2 V 時被截為 2 V，在 V<sub>in</sub> &lt; −1.5 V 時被截為 −1.5 V，其餘時間 V<sub>out</sub> = V<sub>in</sub>。</li>
+  <li>V<sub>in</sub> = 1 V 落在 −1.5～2 V 範圍內，兩顆二極體皆截止，R 上電流為 0（輸出未接負載）。</li>
+</ol></details>
+<details class="q"><summary>(c) 若把 D<sub>1</sub> 支路的電池拿掉（V<sub>B1</sub> = 0），正半週的輸出上限為何？</summary>
+<ol class="sol">
+  <li>上限變為 0 + V<sub>D,on</sub> = 0.8 V。這是最簡單的保護電路：以一顆順偏二極體限制輸入不超過約 0.8 V。</li>
+</ol></details>
+</div>
+
+### 4　倍壓器（Voltage Doubler）
+
+某些應用需要高於輸入峰值的直流電壓。倍壓器由兩部分組成：
+
+<ol>
+  <li><b>箝位器（clamp）</b>：C<sub>1</sub> 與 D<sub>1</sub>。負半週 D<sub>1</sub> 導通，將 C<sub>1</sub> 充電至 V<sub>p</sub>（左正右負的相反極性，使 V<sub>X</sub> 最低為 0）。之後 V<sub>X</sub> = V<sub>in</sub> + V<sub>p</sub>，波形整體上移 V<sub>p</sub>，範圍 0～2V<sub>p</sub>。</li>
+  <li><b>峰值偵測器</b>：D<sub>2</sub> 與 C<sub>2</sub>，偵測 V<sub>X</sub> 的峰值 2V<sub>p</sub>。</li>
+</ol>
+
+<div class="grid2">
+  <figure class="fig"><svg id="f-dbl" class="md"></svg>
+    <figcaption>倍壓器：C<sub>1</sub>、D<sub>1</sub> 構成箝位器，D<sub>2</sub>、C<sub>2</sub> 構成峰值偵測器。</figcaption></figure>
+  <figure class="fig"><svg id="f-dblw"></svg>
+    <figcaption>由零初始狀態開始的暫態（理想二極體，C<sub>1</sub> = C<sub>2</sub>，無負載）。每個週期 D<sub>2</sub> 導通時 C<sub>1</sub> 與 C<sub>2</sub> 分享電荷，V<sub>out</sub> 逐週期逼近 2V<sub>p</sub>。</figcaption></figure>
+</div>
+
+以定電壓模型，V<sub>X</sub> 的最低值為 −V<sub>D,on</sub>，最高值為 2V<sub>p</sub> − V<sub>D,on</sub>，輸出為 <span class="m">2<i>V</i><sub>p</sub> − 2<i>V</i><sub>D,on</sub></span>。接上負載時，輸出同樣出現漣波，分析方式與峰值偵測器相同。
+
+<div class="box note"><span class="tag">補充</span><br>
+重複「箝位 + 峰值偵測」的結構可串接成三倍、四倍壓器，常用於需要高電壓但電流很小的場合。</div>
+
+<div class="box note"><span class="tag">觀念說明：電容兩端電壓不能瞬間改變</span><br>
+箝位器的關鍵是電容。C<sub>1</sub> 充電完成後，兩端電壓固定為 V<sub>p</sub>（無放電路徑）。電容可視為一個串在訊號路徑上的電池：V<sub>X</sub> = V<sub>in</sub> + V<sub>p</sub>，輸入波形的形狀不變，只是整體上移。D<sub>1</sub> 的作用是決定這顆「電池」的電壓：它使 V<sub>X</sub> 的最低點恰好被限制在 0 V（CVD 下為 −V<sub>D,on</sub>）。</div>
+
+<div class="practice"><span class="tag">練習 3.5D（倍壓）</span>
+<details class="q"><summary>(a) 倍壓器 V<sub>in,p</sub> = 3 V，CVD。求 V<sub>X</sub> 的範圍與無負載輸出。</summary>
+<ol class="sol">
+  <li>負半週峰值 V<sub>in</sub> = −3 V 時 D<sub>1</sub> 導通，V<sub>X</sub> = −0.8 V，C<sub>1</sub> 兩端電壓 = V<sub>X</sub> − V<sub>in</sub> = 2.2 V（右端較高）。</li>
+  <li>V<sub>X</sub> = V<sub>in</sub> + 2.2 V，範圍 −0.8 V 到 5.2 V。</li>
+  <li>峰值偵測：V<sub>out</sub> = 5.2 − 0.8 = 4.4 V = 2V<sub>p</sub> − 2V<sub>D,on</sub>。</li>
+</ol></details>
+<details class="q"><summary>(b) 為何互動圖中 V<sub>out</sub> 需要多個週期才接近 2V<sub>p</sub>？</summary>
+<ol class="sol">
+  <li>D<sub>2</sub> 導通時，C<sub>1</sub> 與 C<sub>2</sub> 串在同一路徑上分享電荷，C<sub>1</sub> 的電壓會因此下降一些。</li>
+  <li>下一個負半週 D<sub>1</sub> 把 C<sub>1</sub> 重新充回 V<sub>p</sub>，正半週再把部分電荷送到 C<sub>2</sub>。</li>
+  <li>每次送出的量與「V<sub>X</sub> 峰值 − V<sub>out</sub>」成正比，因此 V<sub>out</sub> 以遞減的步幅逼近 2V<sub>p</sub>。</li>
+</ol></details>
+</div>
+
+### 5　準位移位與開關
+
+<h4>(a) 準位移位器（Level Shifter）</h4>
+
+兩個電路的直流準位不同時，需要將訊號的直流值平移而不改變其交流成分。將偏壓於固定電流的二極體串在訊號路徑上，輸出即為輸入減去 V<sub>D,on</sub>（或其整數倍）。由小信號觀點，二極體只呈現很小的 r<sub>d</sub>，訊號的變化量幾乎完整傳到輸出。此作法的限制是平移量只能約為 V<sub>D,on</sub> 的整數倍，且偏壓電流必須維持，否則 V<sub>D</sub> 隨電流改變。
+
+<h4>(b) 二極體作為開關</h4>
+
+以控制電壓決定二極體導通或截止，可使訊號路徑接通或斷開。例如取樣電路中，二極體導通時電容追隨輸入，截止時電容保持取樣值。問題在於：導通時的訊號路徑上存在 V<sub>D,on</sub> 的壓降，且壓降隨電流變化，使取樣值產生誤差；同時二極體只能單向導電，電容無法經由同一二極體放電。這些限制使二極體開關在積體電路中多被 MOS 開關取代（第 6、7 章）。
+
+## 附錄 公式・陷阱・測驗
+
+### A　公式總表
+
+<div class="tbl"><table>
+  <tr><th>項目</th><th>公式</th><th>備註</th></tr>
+  <tr><td>指數模型</td><td>I<sub>D</sub> = I<sub>S</sub>[exp(V<sub>D</sub>/V<sub>T</sub>) − 1]</td><td>V<sub>T</sub> ≈ 26 mV（300 K）</td></tr>
+  <tr><td>定電壓模型</td><td>導通：V<sub>D</sub> = V<sub>D,on</sub>；截止：開路</td><td>V<sub>D,on</sub> ≈ 0.7～0.8 V</td></tr>
+  <tr><td>小信號電阻</td><td>r<sub>d</sub> = V<sub>T</sub>/I<sub>D</sub></td><td>成立條件 |ΔV<sub>D</sub>| ≪ V<sub>T</sub></td></tr>
+  <tr><td>半波整流平均值</td><td>V<sub>p</sub>/π</td><td>理想模型、無電容</td></tr>
+  <tr><td>漣波（半波）</td><td>V<sub>R</sub> ≈ V<sub>p</sub>/(R<sub>L</sub>C f<sub>in</sub>)</td><td>R<sub>L</sub>C ≫ T<sub>in</sub></td></tr>
+  <tr><td>漣波（全波）</td><td>V<sub>R</sub> ≈ V<sub>p</sub>/(2R<sub>L</sub>C f<sub>in</sub>)</td><td></td></tr>
+  <tr><td>導通角</td><td>ωΔt ≈ √(2V<sub>R</sub>/V<sub>p</sub>)</td><td></td></tr>
+  <tr><td>二極體峰值電流</td><td>I<sub>p</sub> ≈ CωV<sub>p</sub>√(2V<sub>R</sub>/V<sub>p</sub>) + V<sub>p</sub>/R<sub>L</sub></td><td></td></tr>
+  <tr><td>PIV</td><td>半波含 C：2V<sub>p</sub> − V<sub>D,on</sub>；橋式：V<sub>p</sub> − V<sub>D,on</sub></td><td></td></tr>
+  <tr><td>二極體穩壓（n 顆）</td><td>ΔV<sub>out</sub>/ΔV<sub>in</sub> = nr<sub>d</sub>/(R + nr<sub>d</sub>)</td><td></td></tr>
+  <tr><td>倍壓器輸出</td><td>2V<sub>p</sub>（理想）；2V<sub>p</sub> − 2V<sub>D,on</sub>（CVD）</td><td>無負載</td></tr>
+</table></div>
+
+### B　常見陷阱
+
+<div class="box warn"><span class="tag">易錯處</span>
+<ol>
+  <li><b>假設後未驗證</b>：假設導通後必須檢查 I<sub>D</sub> 方向，假設截止後必須檢查 V<sub>D</sub>。只求解不驗證可能得到物理上不可能的答案。</li>
+  <li><b>CVD 的截止條件</b>：是 V<sub>D</sub> &lt; V<sub>D,on</sub>，不是 V<sub>D</sub> &lt; 0。</li>
+  <li><b>漣波公式中的 V<sub>p</sub></b>：是輸出峰值（扣除二極體壓降），橋式需扣兩個壓降。</li>
+  <li><b>全波的頻率</b>：放電間隔為 T<sub>in</sub>/2，公式中的 f<sub>in</sub> 要乘 2。</li>
+  <li><b>小信號分析時的直流源</b>：直流電壓源視為短路，而不是保留其電壓值；r<sub>d</sub> 取代二極體時不再串聯 V<sub>D,on</sub>。</li>
+  <li><b>r<sub>d</sub> 由偏壓電流決定</b>：必須先完成直流分析，不能直接用 1 mA 對應的 26 Ω。</li>
+  <li><b>PIV 與電容</b>：加入濾波電容後，半波整流的 PIV 由 V<sub>p</sub> 增為約 2V<sub>p</sub>。</li>
+</ol></div>
+
+### C　自我測驗
+
+<details class="q"><summary>1. 半波整流含電容，V<sub>in,p</sub> = 10 V，V<sub>D,on</sub> = 0.8 V，R<sub>L</sub> = 500 Ω，C = 1000 µF，f<sub>in</sub> = 60 Hz。求漣波。</summary>V<sub>p</sub> = 9.2 V，V<sub>R</sub> ≈ 9.2/(500 × 10<sup>−3</sup> × 60) ≈ 0.31 V</details>
+
+<details class="q"><summary>2. 同第 1 題改為橋式全波整流，求漣波。</summary>V<sub>p</sub> = 8.4 V，V<sub>R</sub> ≈ 8.4/(500 × 10<sup>−3</sup> × 120) = 0.14 V</details>
+
+<details class="q"><summary>3. 二極體偏壓於 2 mA，求 r<sub>d</sub>。</summary>r<sub>d</sub> = 26 mV / 2 mA = 13 Ω</details>
+
+<details class="q"><summary>4. 雙邊限幅器 V<sub>B1</sub> = 1 V、V<sub>B2</sub> = 2 V、V<sub>D,on</sub> = 0.8 V，求輸出範圍。</summary>−2.8 V ≤ V<sub>out</sub> ≤ 1.8 V</details>
+
+<details class="q"><summary>5. 第 1 題電路中二極體的 PIV 約為多少？</summary>2V<sub>in,p</sub> − V<sub>D,on</sub> = 19.2 V</details>
+
+<details class="q"><summary>6. 倍壓器 V<sub>in,p</sub> = 5 V，以定電壓模型求無負載輸出。</summary>2 × 5 − 2 × 0.8 = 8.4 V</details>
+
+<details class="q"><summary>7. 為何降低漣波會提高二極體峰值電流？</summary>漣波越小，每週期二極體導通的時間越短（ωΔt ≈ √(2V<sub>R</sub>/V<sub>p</sub>)），但需補充的電荷（約 I<sub>L</sub>T<sub>in</sub>）不變，因此電流峰值增加。</details>
+
+<details class="q"><summary>8. 例題 3.6 的穩壓器若改用四顆二極體（其餘不變），輸出漣波如何變化？</summary>V<sub>out</sub> 約 3.0 V，I<sub>D</sub> ≈ (5 − 3.0)/1 k ≈ 2.0 mA，r<sub>d</sub> ≈ 13 Ω，4r<sub>d</sub> ≈ 52 Ω，ΔV<sub>out</sub> ≈ ±0.1 × 52/1052 ≈ ±4.9 mV，漣波變大：串聯顆數增加且偏壓電流下降，兩者都使 nr<sub>d</sub> 增大。</details>
+
+<details class="q"><summary>9. 電路 B（串聯型）以理想模型與定電壓模型分析，轉移特性有何差別？</summary>理想模型轉折點在 V<sub>in</sub> = 0，導通後 V<sub>out</sub> = V<sub>in</sub>；定電壓模型轉折點右移至 0.8 V，導通後 V<sub>out</sub> = V<sub>in</sub> − 0.8 V。兩者斜率相同，僅平移。</details>
+
+### D　名詞對照表
+
+| 中文 | English |
+|------|---------|
+| 理想二極體 | ideal diode |
+| 陽極 | anode |
+| 陰極 | cathode |
+| 導通 | on |
+| 截止 | off |
+| 整流器 | rectifier |
+| 半波整流器 | half-wave rectifier |
+| 全波整流器 | full-wave rectifier |
+| 定電壓模型 | constant-voltage diode model, CVD |
+| 指數模型 | exponential model |
+| 轉移特性 | transfer characteristic |
+| 大信號 | large-signal |
+| 小信號 | small-signal |
+| 小信號電阻 | small-signal resistance |
+| 峰值偵測器 | peak detector |
+| 漣波 | ripple |
+| 峰值逆向電壓 | peak inverse voltage, PIV |
+| 穩壓 | voltage regulation |
+| 限幅電路 | limiting circuit |
+| 限幅器 | limiter |
+| 倍壓器 | voltage doubler |
+| 箝位器 | clamp |
+| 準位移位器 | level shifter |
